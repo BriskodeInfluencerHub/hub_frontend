@@ -1,10 +1,25 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../store/authContext';
+
+// Core Views
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import OtpPage from '../pages/OtpPage';
+
+// Public Directory Pages
+import AboutPage from '../pages/AboutPage';
+import ContactPage from '../pages/ContactPage';
+import PricingPage from '../pages/PricingPage';
+import BlogPage from '../pages/BlogPage';
+import BlogPostPage from '../pages/BlogPostPage';
+import InfluencersDirectory from '../pages/InfluencersDirectory';
+import BrandsDirectory from '../pages/BrandsDirectory';
+import TermsPage from '../pages/TermsPage';
+import PrivacyPage from '../pages/PrivacyPage';
+
+// Dashboard & Protected Pages
 import InfluencerDashboard from '../pages/InfluencerDashboard';
 import BrandDashboard from '../pages/BrandDashboard';
 import AdminDashboard from '../pages/AdminDashboard';
@@ -17,8 +32,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-neutral-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
+      <div className="flex h-screen items-center justify-center bg-raw-cotton">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-bright-tangerine border-t-transparent"></div>
       </div>
     );
   }
@@ -50,11 +65,22 @@ const DashboardRouter = () => {
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public Pages */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-otp" element={<OtpPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/blog/:slug" element={<BlogPostPage />} />
+      <Route path="/influencers" element={<InfluencersDirectory />} />
+      <Route path="/brands" element={<BrandsDirectory />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       
+      {/* Protected Routes */}
       <Route 
         path="/dashboard" 
         element={

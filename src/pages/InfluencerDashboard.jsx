@@ -32,7 +32,7 @@ const InfluencerDashboard = () => {
         setBio(profileRes.data.profile.bio || '');
         setLocation(profileRes.data.profile.location || '');
         setCategories(profileRes.data.profile.categories?.join(', ') || '');
-        
+
         const instaAcc = profileRes.data.profile.socialAccounts?.find(s => s.platform === 'instagram');
         if (instaAcc) {
           setInstagram(instaAcc.username || '');
@@ -268,12 +268,11 @@ const InfluencerDashboard = () => {
                       )}
                     </div>
                     <div className="flex items-center space-x-3.5">
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${
-                        app.status === 'approved' ? 'bg-green-50 text-green-600' :
-                        app.status === 'rejected' ? 'bg-red-50 text-red-600' :
-                        app.status === 'completed' ? 'bg-brand-50 text-brand-600' :
-                        'bg-amber-50 text-amber-600'
-                      }`}>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${app.status === 'approved' ? 'bg-green-50 text-green-600' :
+                          app.status === 'rejected' ? 'bg-red-50 text-red-600' :
+                            app.status === 'completed' ? 'bg-brand-50 text-brand-600' :
+                              'bg-amber-50 text-amber-600'
+                        }`}>
                         {app.status}
                       </span>
                       {app.status === 'approved' && !app.deliverablesUrl && (
@@ -332,7 +331,7 @@ const InfluencerDashboard = () => {
 
               <div className="border-t border-neutral-100 pt-5 space-y-4">
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Social Channels Setup</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-neutral-500">Instagram Handle</label>
