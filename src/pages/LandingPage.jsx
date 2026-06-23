@@ -36,8 +36,8 @@ const ParticleBackground = () => {
         this.speedX = Math.random() * 0.15 - 0.075;
         this.speedY = Math.random() * -0.2 - 0.05;
         this.opacity = Math.random() * 0.4 + 0.15;
-        this.color = Math.random() > 0.5 
-          ? `rgba(14, 129, 236, ${this.opacity})` 
+        this.color = Math.random() > 0.5
+          ? `rgba(14, 129, 236, ${this.opacity})`
           : `rgba(99, 102, 241, ${this.opacity})`;
       }
 
@@ -207,21 +207,16 @@ const LandingPage = () => {
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
-            
+
             {/* Left: Content Column */}
             <div className="lg:col-span-5 space-y-8 text-center lg:text-left">
-              <div className="inline-flex items-center space-x-2 rounded-full bg-neutral-900 text-neutral-50 px-4 py-1.5 text-xs font-medium tracking-wide font-mono shadow-sm">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="text-neutral-300">SYSTEM: Matchmaker Active</span>
-              </div>
-              
               <h1 className="text-4xl font-extrabold tracking-tight font-display sm:text-5xl lg:text-6xl text-neutral-900 leading-[1.08]">
                 Where creator talent gets{' '}
                 <span className="block bg-gradient-to-r from-brand-500 via-indigo-500 to-indigo-600 bg-clip-text text-transparent">
                   paid on time.
                 </span>
               </h1>
-              
+
               <p className="max-w-lg text-neutral-500 text-base leading-relaxed mx-auto lg:mx-0 font-sans">
                 Skip the payment chase. BRISKODE locks campaign budgets in secure smart escrow prior to content production, ensuring guaranteed payouts for creators and verified conversion performance for brands.
               </p>
@@ -231,14 +226,8 @@ const LandingPage = () => {
                   to="/register"
                   className="group flex items-center justify-center rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 px-8 py-4 text-sm font-bold text-white shadow-[0_4px_18px_rgba(79,70,229,0.25)] hover:shadow-[0_6px_22px_rgba(79,70,229,0.35)] hover:-translate-y-0.5 transition-all duration-200"
                 >
-                  Onboard Today 
+                  Onboard Today
                   <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
-                </Link>
-                <Link
-                  to="/influencers"
-                  className="flex items-center justify-center rounded-full border border-neutral-200 bg-white px-8 py-4 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 hover:border-neutral-300 hover:-translate-y-0.5 transition-all duration-200 shadow-sm"
-                >
-                  Browse Directory
                 </Link>
               </div>
 
@@ -267,7 +256,7 @@ const LandingPage = () => {
 
             {/* Right: Interactive Mockup Panel */}
             <div className="lg:col-span-7 mt-16 lg:mt-0 relative">
-              
+
               {/* Backdrops decorator */}
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl -z-10 animate-float-medium"></div>
               <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl -z-10 animate-float-slow"></div>
@@ -283,14 +272,14 @@ const LandingPage = () => {
                   </div>
                   <div className="bg-neutral-200/50 rounded-lg px-6 py-1 text-[10px] text-neutral-500 font-mono flex items-center space-x-1.5 max-w-[240px] truncate border border-neutral-300/30">
                     <span className="text-neutral-400">https://</span>
-                    <span className="font-semibold text-neutral-600">briskode.com/matchmaker</span>
+                    <span className="font-semibold text-neutral-600">briskodetechnology.com/</span>
                   </div>
                   <div className="w-12"></div> {/* spacer */}
                 </div>
 
                 {/* Dashboard Core Body */}
                 <div className="p-5 sm:p-7 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-[380px]">
-                  
+
                   {/* Left Column: Brief Feed */}
                   <div className="md:col-span-5 space-y-3.5">
                     <div className="flex items-center justify-between px-1">
@@ -300,7 +289,7 @@ const LandingPage = () => {
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                       </span>
                     </div>
-                    
+
                     <div className="space-y-2">
                       {campaignMatches.map((campaign, idx) => {
                         const isActive = idx === activeIdx;
@@ -309,11 +298,10 @@ const LandingPage = () => {
                             key={campaign.id}
                             onClick={() => triggerMatch(idx)}
                             disabled={isMatching && !isActive}
-                            className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 relative ${
-                              isActive
+                            className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 relative ${isActive
                                 ? 'border-brand-500 bg-brand-50/40 shadow-[0_4px_12px_rgba(14,129,236,0.04)]'
                                 : 'border-neutral-200/60 bg-white hover:bg-neutral-50/50 hover:border-neutral-300'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
@@ -322,7 +310,7 @@ const LandingPage = () => {
                               </div>
                               <span className="font-mono text-[9px] font-bold text-neutral-600">{campaign.budget}</span>
                             </div>
-                            
+
                             {isActive && (
                               <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-brand-500 flex items-center justify-center text-[8px] text-white font-bold shadow-md shadow-brand-500/20">
                                 →
@@ -332,7 +320,7 @@ const LandingPage = () => {
                         );
                       })}
                     </div>
-                    
+
                     <div className="pt-1 text-center">
                       <p className="text-[9px] text-neutral-400 font-mono">Select a brand brief to test match</p>
                     </div>
@@ -340,7 +328,7 @@ const LandingPage = () => {
 
                   {/* Right Column: AI recommendation results */}
                   <div className="md:col-span-7 flex flex-col justify-between border-t md:border-t-0 md:border-l border-neutral-200/80 pt-5 md:pt-0 md:pl-6">
-                    
+
                     {/* Recommendation state */}
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
@@ -380,7 +368,7 @@ const LandingPage = () => {
                               </div>
                               <p className="text-xs text-neutral-400 font-medium font-mono">{campaignMatches[activeIdx].creator.handle}</p>
                             </div>
-                            
+
                             <div className="ml-auto text-right">
                               <div className="text-[8px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Match score</div>
                               <div className="font-display font-extrabold text-base text-brand-500 mt-0.5">{campaignMatches[activeIdx].matchPercent}%</div>
@@ -393,18 +381,18 @@ const LandingPage = () => {
                     {/* Escrow Agreement Ticket Section */}
                     <div className="mt-5">
                       <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest font-mono mb-2.5">Escrow Smart Agreement</div>
-                      
+
                       {matchStatus === 'matching' ? (
                         <div className="border border-dashed border-neutral-200/80 rounded-xl p-6 text-center bg-white/40 min-h-[105px] flex items-center justify-center">
                           <p className="text-[10px] text-neutral-450 font-mono animate-pulse">Holding matching contract in queue...</p>
                         </div>
                       ) : (
                         <div className="group relative border border-neutral-200/80 rounded-xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.01)] overflow-hidden text-left transition-all duration-300 hover:border-brand-400 hover:shadow-[0_8px_24px_rgba(14,129,236,0.04)]">
-                          
+
                           {/* Inner notches for ticket perforating look */}
                           <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-r border-neutral-200/80 z-10"></div>
                           <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-l border-neutral-200/80 z-10"></div>
-                          
+
                           <div className="flex">
                             {/* Left Half: Brief Specs */}
                             <div className="flex-1 p-4 space-y-2 text-[10px] transition-transform duration-300 group-hover:-translate-x-0.5">
@@ -418,12 +406,12 @@ const LandingPage = () => {
                                 {campaignMatches[activeIdx].brief}
                               </p>
                             </div>
-                            
+
                             {/* Vertical divider */}
                             <div className="relative py-2 flex flex-col justify-between">
                               <div className="w-px h-full border-r border-dashed border-neutral-200"></div>
                             </div>
-                            
+
                             {/* Right Half: Escrow locked indicator */}
                             <div className="w-24 p-4 text-center flex flex-col justify-between items-center transition-transform duration-300 group-hover:translate-x-0.5">
                               <div>
@@ -550,7 +538,7 @@ const LandingPage = () => {
                 )}
                 <h4 className="text-lg font-bold font-display text-neutral-850">{plan.name}</h4>
                 <p className="mt-2 text-xs text-neutral-400 min-h-[32px]">{plan.desc}</p>
-                
+
                 <div className="mt-6 flex items-baseline">
                   <span className="text-4xl font-extrabold text-neutral-900 font-display">{plan.price}</span>
                   <span className="text-xs font-semibold text-neutral-450 ml-1">{plan.period}</span>
@@ -597,8 +585,80 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 text-center text-xs text-neutral-400 bg-neutral-50/50">
-        <p>&copy; {new Date().getFullYear()} BRISKODE. All Rights Reserved. <Link to="/terms" className="hover:underline">Terms</Link> | <Link to="/privacy" className="hover:underline">Privacy Policy</Link></p>
+      <footer className="bg-neutral-950 text-neutral-400 py-16 border-t border-neutral-900 font-sans relative overflow-hidden">
+        {/* Glow decoration */}
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl -z-10"></div>
+        
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-neutral-900">
+            {/* Column 1: Brand Info */}
+            <div className="md:col-span-5 space-y-4 text-left">
+              <Link to="/" className="text-lg font-bold tracking-tight text-white font-display inline-block">
+                BRISKODE <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Influencer Hub</span>
+              </Link>
+              <p className="text-xs leading-relaxed max-w-sm text-neutral-400">
+                The modern escrow and verification platform for creator campaigns. We build trust by locking campaign budgets and automating deliverable validation.
+              </p>
+              <div className="flex space-x-3 pt-2">
+                {/* Social icons */}
+                <a href="#" className="p-2 rounded-full bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-850 transition-all duration-200">
+                  <Instagram size={16} />
+                </a>
+                <a href="#" className="p-2 rounded-full bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-850 transition-all duration-200">
+                  <Youtube size={16} />
+                </a>
+                <a href="#" className="p-2 rounded-full bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-850 transition-all duration-200">
+                  <Sparkles size={16} />
+                </a>
+              </div>
+            </div>
+
+            {/* Column 2: Product */}
+            <div className="md:col-span-2 space-y-3 text-left">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Product</h4>
+              <ul className="space-y-2 text-xs">
+                <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing Plans</Link></li>
+                <li><a href="#how-it-works" className="hover:text-white transition-colors">How Escrow Works</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Campaign Ledger</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Company */}
+            <div className="md:col-span-2 space-y-3 text-left">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Company</h4>
+              <ul className="space-y-2 text-xs">
+                <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Contact Support</Link></li>
+                <li><a href="#" className="hover:text-white transition-colors">Partner Program</a></li>
+              </ul>
+            </div>
+
+            {/* Column 4: Newsletter */}
+            <div className="md:col-span-3 space-y-3 text-left">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Stay Updated</h4>
+              <p className="text-xs text-neutral-400 font-sans">Subscribe to get escrow validation updates and platform insights.</p>
+              <form onSubmit={(e) => e.preventDefault()} className="flex items-center space-x-2 pt-1">
+                <input 
+                  type="email" 
+                  placeholder="Enter email" 
+                  className="w-full rounded-full border border-neutral-800 bg-neutral-900 px-3.5 py-1.5 text-xs text-white placeholder-neutral-500 focus:border-brand-500 focus:outline-none" 
+                />
+                <button type="submit" className="rounded-full bg-brand-500 text-white px-3.5 py-1.5 text-xs font-bold hover:bg-brand-600 transition-colors">
+                  Join
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between items-center pt-8 text-neutral-500 text-[11px]">
+            <p>&copy; {new Date().getFullYear()} BRISKODE. All rights reserved.</p>
+            <div className="flex space-x-4 mt-4 sm:mt-0">
+              <Link to="/terms" className="hover:text-neutral-400 transition-colors">Terms of Service</Link>
+              <span>|</span>
+              <Link to="/privacy" className="hover:text-neutral-400 transition-colors">Privacy Policy</Link>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
