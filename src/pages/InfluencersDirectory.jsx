@@ -1,23 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
-import { Search, MapPin } from 'lucide-react';
+import api from '../services/api';
+import { Search, MapPin, User as UserIcon } from 'lucide-react';
+
+const categoryOptions = [
+  'Tech', 'Fashion', 'Travel', 'Food', 'Fitness', 'Design',
+  'Music', 'Gaming', 'Lifestyle', 'Beauty', 'Finance', 'Education'
+];
 
 const InfluencersDirectory = () => {
+  const [creators, setCreators] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const creators = [
-    { name: 'Sarah Vance', handle: '@sarah_v', location: 'London, UK', category: 'Design', fans: '142K', engagement: '5.6%', color: 'bg-blue-50 text-blue-600' },
-    { name: 'Leo Dubois', handle: '@tech_leo', location: 'Paris, FR', category: 'Tech', fans: '52K', engagement: '7.2%', color: 'bg-indigo-50 text-indigo-600' },
-    { name: 'Aria Cross', handle: '@aria_travels', location: 'New York, US', category: 'Travel', fans: '210K', engagement: '4.8%', color: 'bg-violet-50 text-violet-600' },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    const params = {};
+    if (category) params.category = category;
+    if (search) params.search = search;
+    api.get('/users/influencers', { params }).then((res) => {
+      setCreators(res.data);
+    }).catch(console.warn).finally(() => setLoading(false));
+  }, [category]);
 
   const filtered = creators.filter(c => {
     if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (category && c.category !== category) return false;
     return true;
   });
+
+  const totalFollowers = (accounts) => {
+    return accounts?.reduce((sum, a) => sum + (a.followers || 0), 0) || 0;
+  };
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 flex flex-col font-sans">
@@ -48,56 +63,68 @@ const InfluencersDirectory = () => {
               className="rounded-xl border border-neutral-200 py-2 px-3 text-xs bg-white focus:outline-none"
             >
               <option value="">All Niches</option>
-              <option value="Design">Design</option>
-              <option value="Tech">Tech</option>
-              <option value="Travel">Travel</option>
+              {categoryOptions.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((c, idx) => (
-            <div key={idx} className="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm hover:shadow-md hover:border-neutral-350 transition-all flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className={`h-10 w-10 rounded-full ${c.color} flex items-center justify-center font-bold font-display border border-neutral-100 text-sm`}>
-                      {c.name.charAt(0)}
+          {loading ? (
+            <div className="col-span-full text-center py-12 text-sm text-neutral-400">Loading creators...</div>
+          ) : filtered.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-sm text-neutral-400">No verified creators found.</div>
+          ) : (
+            filtered.map((c) => (
+              <div key={c._id} className="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm hover:shadow-md hover:border-neutral-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center space-x-3">
+                      {c.profileImage ? (
+                        <img src={`http://localhost:5001${c.profileImage}`} alt="" className="h-10 w-10 rounded-full object-cover border border-neutral-100" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center font-bold font-display border border-neutral-100 text-sm text-brand-600">
+                          {c.name.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-display font-bold text-sm text-neutral-900">{c.name}</h3>
+                        <span className="text-xs text-neutral-450 font-medium">{c.handle}</span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-display font-bold text-sm text-neutral-900">{c.name}</h3>
-                      <span className="text-xs text-neutral-450 font-medium">{c.handle}</span>
+                    {c.categories?.[0] && (
+                      <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-[10px] font-semibold text-neutral-600">{c.categories[0]}</span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5 text-xs border-t border-neutral-100 pt-4">
+                    <div className="flex items-center text-neutral-500">
+                      <MapPin size={14} className="mr-1.5" />
+                      <span>{c.location || 'Location not set'}</span>
+                    </div>
+                    <div className="flex justify-between text-neutral-600 font-medium">
+                      <span>Est. Reach:</span>
+                      <span className="font-bold text-neutral-800">{totalFollowers(c.socialAccounts).toLocaleString()} fans</span>
+                    </div>
+                    <div className="flex justify-between text-neutral-600 font-medium">
+                      <span>Profile:</span>
+                      <span className="font-bold text-brand-500">{c.profileCompletion}% complete</span>
                     </div>
                   </div>
-                  <span className="rounded-full bg-neutral-105 px-2.5 py-0.5 text-[10px] font-semibold text-neutral-600">{c.category}</span>
                 </div>
 
-                <div className="space-y-2.5 text-xs border-t border-neutral-100 pt-4">
-                  <div className="flex items-center text-neutral-500">
-                    <MapPin size={14} className="mr-1.5" />
-                    <span>{c.location}</span>
-                  </div>
-                  <div className="flex justify-between text-neutral-600 font-medium">
-                    <span>Est. Reach:</span>
-                    <span className="font-bold text-neutral-800">{c.fans}</span>
-                  </div>
-                  <div className="flex justify-between text-neutral-600 font-medium">
-                    <span>Engagement:</span>
-                    <span className="font-bold text-brand-500">{c.engagement}</span>
-                  </div>
+                <div className="mt-6 pt-4 border-t border-neutral-100 flex justify-end">
+                  <Link
+                    to="/register"
+                    className="rounded-full bg-neutral-900 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-500 transition-all"
+                  >
+                    Contact Creator
+                  </Link>
                 </div>
               </div>
-
-              <div className="mt-6 pt-4 border-t border-neutral-100 flex justify-end">
-                <Link
-                  to="/register"
-                  className="rounded-full bg-neutral-900 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-500 transition-all"
-                >
-                  Contact Creator
-                </Link>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </main>
     </div>

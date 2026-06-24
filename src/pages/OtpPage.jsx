@@ -9,6 +9,7 @@ const OtpPage = () => {
   const location = useLocation();
 
   const initialEmail = location.state?.email || '';
+  const otpCode = location.state?.otpCode || '';
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -42,8 +43,14 @@ const OtpPage = () => {
           </div>
           <h2 className="text-xl font-bold tracking-tight text-neutral-800">OTP Verification</h2>
           <p className="mt-2 text-xs text-neutral-400">
-            We have sent a verification code to your email. Check your server console logs for the simulated OTP.
+            Enter the verification code sent to your email.
           </p>
+          {otpCode && (
+            <div className="mt-4 rounded-xl bg-brand-50 border border-brand-200 p-4 text-center">
+              <span className="text-[10px] font-bold text-brand-500 uppercase tracking-wider">Dev OTP Code</span>
+              <p className="text-2xl font-extrabold tracking-widest text-brand-700 mt-1 select-all">{otpCode}</p>
+            </div>
+          )}
         </div>
 
         {error && (

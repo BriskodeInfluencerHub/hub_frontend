@@ -20,8 +20,8 @@ const RegisterPage = () => {
     setError('');
     setSubmitting(true);
     try {
-      await register(name, email, phone, password, role);
-      navigate('/verify-otp', { state: { email } });
+      const res = await register(name, email, phone, password, role);
+      navigate('/verify-otp', { state: { email, otpCode: res.otpCode } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Check details.');
     } finally {

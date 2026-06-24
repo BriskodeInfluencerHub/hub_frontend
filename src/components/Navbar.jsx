@@ -54,6 +54,8 @@ const Navbar = () => {
 
           <div className="hidden md:flex md:items-center md:space-x-6">
             <Link to="/" className={`text-sm transition-colors font-display font-medium ${activeLink('/')}`}>Home</Link>
+            <Link to="/influencers" className={`text-sm transition-colors font-display font-medium ${activeLink('/influencers')}`}>Influencers</Link>
+            <Link to="/brands" className={`text-sm transition-colors font-display font-medium ${activeLink('/brands')}`}>Brand Briefs</Link>
             <Link to="/pricing" className={`text-sm transition-colors font-display font-medium ${activeLink('/pricing')}`}>Pricing</Link>
             <Link to="/about" className={`text-sm transition-colors font-display font-medium ${activeLink('/about')}`}>About</Link>
             <Link to="/contact" className={`text-sm transition-colors font-display font-medium ${activeLink('/contact')}`}>Contact</Link>
@@ -168,6 +170,8 @@ const Navbar = () => {
         <div className="border-b border-neutral-900 bg-neutral-950 md:hidden animate-fade-in text-white">
           <div className="space-y-1 px-2 pt-2 pb-4">
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Home</Link>
+            <Link to="/influencers" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Influencers</Link>
+            <Link to="/brands" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Brand Briefs</Link>
             <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Pricing</Link>
             {user ? (
               <>

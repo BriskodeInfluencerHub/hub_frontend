@@ -18,6 +18,7 @@ const InfluencerDashboard = () => {
   const [youtube, setYoutube] = useState('');
   const [instagramFollowers, setInstagramFollowers] = useState(0);
   const [youtubeFollowers, setYoutubeFollowers] = useState(0);
+  const [portfolioItems, setPortfolioItems] = useState([]);
 
   const [submittingDeliverable, setSubmittingDeliverable] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
@@ -29,16 +30,18 @@ const InfluencerDashboard = () => {
       const profileRes = await api.get('/users/profile');
       setProfile(profileRes.data.profile);
       if (profileRes.data.profile) {
-        setBio(profileRes.data.profile.bio || '');
-        setLocation(profileRes.data.profile.location || '');
-        setCategories(profileRes.data.profile.categories?.join(', ') || '');
+        const p = profileRes.data.profile;
+        setBio(p.bio || '');
+        setLocation(p.location || '');
+        setCategories(p.categories?.join(', ') || '');
+        setPortfolioItems(p.portfolio || []);
 
-        const instaAcc = profileRes.data.profile.socialAccounts?.find(s => s.platform === 'instagram');
+        const instaAcc = p.socialAccounts?.find(s => s.platform === 'instagram');
         if (instaAcc) {
           setInstagram(instaAcc.username || '');
           setInstagramFollowers(instaAcc.followers || 0);
         }
-        const ytAcc = profileRes.data.profile.socialAccounts?.find(s => s.platform === 'youtube');
+        const ytAcc = p.socialAccounts?.find(s => s.platform === 'youtube');
         if (ytAcc) {
           setYoutube(ytAcc.username || '');
           setYoutubeFollowers(ytAcc.followers || 0);
@@ -75,7 +78,8 @@ const InfluencerDashboard = () => {
         bio,
         location,
         categories: categories.split(',').map(c => c.trim()).filter(Boolean),
-        socialAccounts
+        socialAccounts,
+        portfolio: portfolioItems
       });
 
       alert('Profile updated successfully!');
@@ -375,6 +379,63 @@ const InfluencerDashboard = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="border-t border-neutral-100 pt-5 space-y-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Portfolio</h4>
+                {portfolioItems.map((item, idx) => (
+                  <div key={idx} className="rounded-xl border border-neutral-200 p-3 bg-neutral-50/50">
+                    <div className="grid grid-cols-2 gap-3 mb-2">
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => {
+                          const updated = [...portfolioItems];
+                          updated[idx] = { ...updated[idx], title: e.target.value };
+                          setPortfolioItems(updated);
+                        }}
+                        className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white"
+                        placeholder="Project title"
+                      />
+                      <input
+                        type="text"
+                        value={item.fileUrl}
+                        onChange={(e) => {
+                          const updated = [...portfolioItems];
+                          updated[idx] = { ...updated[idx], fileUrl: e.target.value };
+                          setPortfolioItems(updated);
+                        }}
+                        className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white"
+                        placeholder="Link URL"
+                      />
+                    </div>
+                    <textarea
+                      value={item.description}
+                      onChange={(e) => {
+                        const updated = [...portfolioItems];
+                        updated[idx] = { ...updated[idx], description: e.target.value };
+                        setPortfolioItems(updated);
+                      }}
+                      className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mb-2"
+                      rows={2}
+                      placeholder="Brief description"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPortfolioItems(portfolioItems.filter((_, i) => i !== idx))}
+                      className="text-xs text-red-500 hover:text-red-700 font-semibold"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setPortfolioItems([...portfolioItems, { title: '', description: '', fileUrl: '', thumbnail: '' }])}
+                  className="rounded-lg border border-dashed border-neutral-300 w-full py-2 text-xs font-semibold text-neutral-500 hover:border-brand-500 hover:text-brand-600 transition-colors"
+                >
+                  + Add Portfolio Item
+                </button>
               </div>
 
               <div>
