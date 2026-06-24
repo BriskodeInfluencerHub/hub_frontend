@@ -3,6 +3,158 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/authContext';
 import { ArrowRight, Lock, Mail } from 'lucide-react';
 
+const GeoParticleBackground = () => {
+  const canvasRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    
+    const mouse = {
+      x: null,
+      y: null,
+      radius: 120
+    };
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const handleMouseMove = (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+
+    const handleMouseLeave = () => {
+      mouse.x = null;
+      mouse.y = null;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+
+    class Particle {
+      constructor(w, h) {
+        this.w = w;
+        this.h = h;
+        this.reset();
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+      }
+
+      reset() {
+        this.x = Math.random() * this.w;
+        this.y = Math.random() * this.h;
+        this.size = Math.random() * 2.5 + 1.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.45 + 0.35;
+        this.color = Math.random() > 0.5 
+          ? `rgba(236, 72, 153, ${this.opacity})` 
+          : `rgba(99, 102, 241, ${this.opacity})`;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > this.w) this.vx *= -1;
+        if (this.y < 0 || this.y > this.h) this.vy *= -1;
+
+        if (this.x < 0) this.x = 0;
+        if (this.x > this.w) this.x = this.w;
+        if (this.y < 0) this.y = 0;
+        if (this.y > this.h) this.y = this.h;
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    const particles = [];
+    const count = 60; // Slightly lower count for full-screen login pages
+
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle(canvas.width, canvas.height));
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 125) {
+            const alpha = (1 - dist / 125) * 0.28;
+            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+
+        if (mouse.x !== null && mouse.y !== null) {
+          const dxMouse = p1.x - mouse.x;
+          const dyMouse = p1.y - mouse.y;
+          const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+          if (distMouse < mouse.radius) {
+            const alpha = (1 - distMouse / mouse.radius) * 0.45;
+            ctx.strokeStyle = `rgba(236, 72, 153, ${alpha})`;
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
+    />
+  );
+};
+
 const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -29,23 +181,30 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-[#050314] text-white px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-pink-500 selection:text-white">
+      <GeoParticleBackground />
+
+      {/* Glow Effects */}
+      <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.1)_0%,rgba(14,129,236,0)_70%)] blur-[80px] pointer-events-none z-0" />
+      <div className="absolute bottom-[10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.1)_0%,rgba(14,129,236,0)_70%)] blur-[90px] pointer-events-none z-0" />
+
+      {/* Main Glass Form Card */}
+      <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md p-8 shadow-2xl relative z-10 hover:border-neutral-700/80 transition-all duration-300">
         <div className="text-center">
-          <Link to="/" className="text-2xl font-extrabold tracking-tight text-neutral-900">
-            BRISKODE <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">Influencer Hub</span>
+          <Link to="/" className="text-2xl font-bold tracking-tight text-white font-display">
+            BRISKODE <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display">Influencer Hub</span>
           </Link>
-          <h2 className="mt-6 text-xl font-bold tracking-tight text-neutral-800">Sign in to your account</h2>
-          <p className="mt-2 text-xs text-neutral-400">
+          <h2 className="mt-6 text-xl font-bold tracking-tight text-white font-display">Sign in to your account</h2>
+          <p className="mt-2 text-xs text-neutral-400 font-sans">
             Or{' '}
-            <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-500">
+            <Link to="/register" className="font-semibold text-pink-400 hover:text-pink-300 transition-colors">
               create a new account for free
             </Link>
           </p>
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-600 border border-red-200 animate-fade-in">
+          <div className="rounded-xl bg-red-950/40 border border-red-800/60 p-3.5 text-xs font-semibold text-red-350 animate-fade-in">
             {error}
           </div>
         )}
@@ -53,9 +212,9 @@ const LoginPage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email Address</label>
-              <div className="relative mt-1">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+              <label htmlFor="email" className="block text-[10px] font-bold text-neutral-450 uppercase tracking-widest font-mono">Email Address</label>
+              <div className="relative mt-1.5">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                   <Mail size={16} />
                 </div>
                 <input
@@ -64,16 +223,16 @@ const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-xl border border-neutral-200 py-3 pl-10 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition-all bg-neutral-50/50"
+                  className="block w-full rounded-xl border border-neutral-800 bg-neutral-900/50 py-3 pl-10 pr-3 text-sm text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
                   placeholder="name@company.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Password</label>
-              <div className="relative mt-1">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+              <label htmlFor="password" className="block text-[10px] font-bold text-neutral-450 uppercase tracking-widest font-mono">Password</label>
+              <div className="relative mt-1.5">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                   <Lock size={16} />
                 </div>
                 <input
@@ -82,7 +241,7 @@ const LoginPage = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-xl border border-neutral-200 py-3 pl-10 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition-all bg-neutral-50/50"
+                  className="block w-full rounded-xl border border-neutral-800 bg-neutral-900/50 py-3 pl-10 pr-3 text-sm text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
                   placeholder="••••••••"
                 />
               </div>
@@ -93,9 +252,10 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="flex w-full items-center justify-center rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 transition-colors disabled:opacity-50"
+              className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-650 py-3 text-sm font-bold text-white shadow-lg shadow-purple-600/20 hover:opacity-95 transition-all hover:-translate-y-0.5 duration-200 cursor-pointer disabled:opacity-50"
             >
-              {submitting ? 'Signing in...' : 'Sign In'} <ArrowRight size={16} className="ml-2" />
+              <span>{submitting ? 'Signing in...' : 'Sign In'}</span> 
+              <ArrowRight size={16} className="ml-2" />
             </button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/authContext';
-import { Bell, MessageSquare, Wallet, User as UserIcon, LogOut, Menu, X } from 'lucide-react';
+import { Bell, MessageSquare, Wallet, User as UserIcon, LogOut, Menu, X, ChevronDown } from 'lucide-react';
 import api from '../services/api';
 
 const Navbar = () => {
@@ -13,6 +13,7 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showResources, setShowResources] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -55,10 +56,29 @@ const Navbar = () => {
           <div className="hidden md:flex md:items-center md:space-x-6">
             <Link to="/" className={`text-sm transition-colors font-display font-medium ${activeLink('/')}`}>Home</Link>
             <Link to="/influencers" className={`text-sm transition-colors font-display font-medium ${activeLink('/influencers')}`}>Influencers</Link>
-            <Link to="/brands" className={`text-sm transition-colors font-display font-medium ${activeLink('/brands')}`}>Brand Briefs</Link>
+            <Link to="/brands" className={`text-sm transition-colors font-display font-medium ${activeLink('/brands')}`}>Brands</Link>
+            <a href="/#how-it-works" className="text-sm transition-colors font-display font-medium text-neutral-400 hover:text-brand-400">How It Works</a>
             <Link to="/pricing" className={`text-sm transition-colors font-display font-medium ${activeLink('/pricing')}`}>Pricing</Link>
-            <Link to="/about" className={`text-sm transition-colors font-display font-medium ${activeLink('/about')}`}>About</Link>
-            <Link to="/contact" className={`text-sm transition-colors font-display font-medium ${activeLink('/contact')}`}>Contact</Link>
+            
+            {/* Resources Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowResources(!showResources)}
+                className="flex items-center space-x-1 text-sm font-display font-medium text-neutral-400 hover:text-brand-400 transition-colors focus:outline-none cursor-pointer"
+              >
+                <span>Resources</span>
+                <ChevronDown size={14} />
+              </button>
+              {showResources && (
+                <div className="absolute left-0 mt-2 w-40 rounded-xl border border-neutral-850 bg-neutral-950 p-1.5 shadow-2xl animate-fade-in text-white z-50">
+                  <Link to="/about" onClick={() => setShowResources(false)} className="block w-full rounded-lg px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">About Us</Link>
+                  <Link to="/contact" onClick={() => setShowResources(false)} className="block w-full rounded-lg px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Contact</Link>
+                  <Link to="/privacy" onClick={() => setShowResources(false)} className="block w-full rounded-lg px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Privacy</Link>
+                  <Link to="/terms" onClick={() => setShowResources(false)} className="block w-full rounded-lg px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Terms</Link>
+                </div>
+              )}
+            </div>
+
             {user && (
               <>
                 <Link to="/dashboard" className={`text-sm transition-colors font-display font-medium ${activeLink('/dashboard')}`}>Dashboard</Link>
@@ -149,8 +169,8 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-sm font-medium text-neutral-350 hover:text-white transition-colors font-display">Log In</Link>
-                <Link to="/register" className="rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 text-white px-5 py-2 text-sm font-semibold hover:opacity-90 shadow-lg hover:shadow-brand-500/20 transition-all duration-200">Sign Up</Link>
+                <Link to="/login" className="rounded-lg border border-neutral-800 bg-neutral-900/50 text-white hover:bg-neutral-900 hover:border-neutral-700 px-5 py-1.5 text-xs font-semibold transition-all duration-200 font-display">Login</Link>
+                <Link to="/register" className="rounded-lg bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white px-5 py-1.5 text-xs font-semibold hover:opacity-90 shadow-lg hover:shadow-brand-500/20 transition-all duration-200 font-display">Join Now</Link>
               </div>
             )}
           </div>
@@ -171,7 +191,8 @@ const Navbar = () => {
           <div className="space-y-1 px-2 pt-2 pb-4">
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Home</Link>
             <Link to="/influencers" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Influencers</Link>
-            <Link to="/brands" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Brand Briefs</Link>
+            <Link to="/brands" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Brands</Link>
+            <a href="/#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">How It Works</a>
             <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Pricing</Link>
             {user ? (
               <>

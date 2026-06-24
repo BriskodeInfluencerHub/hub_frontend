@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon } from 'lucide-react';
+import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera } from 'lucide-react';
 
 const InfluencerDashboard = () => {
   const [profile, setProfile] = useState(null);
@@ -19,6 +19,15 @@ const InfluencerDashboard = () => {
   const [instagramFollowers, setInstagramFollowers] = useState(0);
   const [youtubeFollowers, setYoutubeFollowers] = useState(0);
   const [portfolioItems, setPortfolioItems] = useState([]);
+  const [profileImage, setProfileImage] = useState('');
+  const [userName, setUserName] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [tagline, setTagline] = useState('');
+  const [pastBrands, setPastBrands] = useState('');
+  const [featuredVideo, setFeaturedVideo] = useState('');
+  const [services, setServices] = useState([]);
+  const [instagramEngagement, setInstagramEngagement] = useState(3.5);
+  const [youtubeEngagement, setYoutubeEngagement] = useState(4.8);
 
   const [submittingDeliverable, setSubmittingDeliverable] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
@@ -29,22 +38,32 @@ const InfluencerDashboard = () => {
     try {
       const profileRes = await api.get('/users/profile');
       setProfile(profileRes.data.profile);
+      if (profileRes.data.user) {
+        setUserName(profileRes.data.user.name || '');
+        setProfileImage(profileRes.data.user.profileImage || '');
+      }
       if (profileRes.data.profile) {
         const p = profileRes.data.profile;
         setBio(p.bio || '');
         setLocation(p.location || '');
         setCategories(p.categories?.join(', ') || '');
         setPortfolioItems(p.portfolio || []);
+        setTagline(p.tagline || '');
+        setPastBrands(p.pastBrands || '');
+        setFeaturedVideo(p.featuredVideo || '');
+        setServices(p.services || []);
 
         const instaAcc = p.socialAccounts?.find(s => s.platform === 'instagram');
         if (instaAcc) {
           setInstagram(instaAcc.username || '');
           setInstagramFollowers(instaAcc.followers || 0);
+          setInstagramEngagement(instaAcc.engagementRate || 3.5);
         }
         const ytAcc = p.socialAccounts?.find(s => s.platform === 'youtube');
         if (ytAcc) {
           setYoutube(ytAcc.username || '');
           setYoutubeFollowers(ytAcc.followers || 0);
+          setYoutubeEngagement(ytAcc.engagementRate || 4.8);
         }
       }
 
@@ -68,18 +87,23 @@ const InfluencerDashboard = () => {
     try {
       const socialAccounts = [];
       if (instagram) {
-        socialAccounts.push({ platform: 'instagram', username: instagram, followers: Number(instagramFollowers), engagementRate: 3.5 });
+        socialAccounts.push({ platform: 'instagram', username: instagram, followers: Number(instagramFollowers), engagementRate: Number(instagramEngagement) || 3.5 });
       }
       if (youtube) {
-        socialAccounts.push({ platform: 'youtube', username: youtube, followers: Number(youtubeFollowers), engagementRate: 4.8 });
+        socialAccounts.push({ platform: 'youtube', username: youtube, followers: Number(youtubeFollowers), engagementRate: Number(youtubeEngagement) || 4.8 });
       }
 
       await api.put('/users/profile', {
+        profileImage,
         bio,
         location,
         categories: categories.split(',').map(c => c.trim()).filter(Boolean),
         socialAccounts,
-        portfolio: portfolioItems
+        portfolio: portfolioItems,
+        tagline,
+        pastBrands,
+        featuredVideo,
+        services
       });
 
       alert('Profile updated successfully!');
@@ -87,6 +111,34 @@ const InfluencerDashboard = () => {
       setActiveTab('overview');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update profile');
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    setUploadingImage(true);
+    try {
+      const res = await api.post('/users/upload-avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setProfileImage(res.data.profileImage);
+      alert('Image uploaded successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -137,11 +189,15 @@ const InfluencerDashboard = () => {
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
         <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex items-center space-x-4">
-            <div className="h-14 w-14 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-600 text-lg">
-              <UserIcon size={24} />
+            <div className="h-14 w-14 rounded-full overflow-hidden bg-brand-50 border border-neutral-200 flex items-center justify-center font-bold text-brand-600 text-lg flex-shrink-0">
+              {profileImage ? (
+                <img src={`http://localhost:5001${profileImage}`} className="h-full w-full object-cover" alt="Profile" />
+              ) : (
+                <UserIcon size={24} className="text-brand-500" />
+              )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-neutral-800">Creator Dashboard</h2>
+              <h2 className="text-xl font-bold text-neutral-800">{userName || 'Creator Dashboard'}</h2>
               <div className="flex items-center space-x-2 text-xs text-neutral-500 mt-1">
                 <MapPin size={14} />
                 <span>{profile?.location || 'Location Not Specified'}</span>
@@ -299,6 +355,60 @@ const InfluencerDashboard = () => {
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm max-w-2xl mx-auto">
             <h3 className="text-base font-bold text-neutral-800 mb-6">Edit Creator Profile</h3>
             <form onSubmit={handleUpdateProfile} className="space-y-5">
+              {/* Profile Image Upload */}
+              <div className="flex items-center space-x-6 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60 mb-6">
+                <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 border border-neutral-200 flex-shrink-0 group">
+                  {profileImage ? (
+                    <img src={`http://localhost:5001${profileImage}`} className="h-full w-full object-cover" alt="Avatar Preview" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-neutral-450 font-bold text-2xl bg-neutral-100">
+                      {userName ? userName.charAt(0).toUpperCase() : <UserIcon size={32} />}
+                    </div>
+                  )}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-neutral-900/60 flex items-center justify-center">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <span className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Profile Picture</span>
+                  <div className="flex items-center space-x-3">
+                    <label className="cursor-pointer inline-flex items-center justify-center px-4 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
+                      <Camera size={14} className="mr-1.5" />
+                      <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                    {profileImage && (
+                      <button
+                        type="button"
+                        onClick={() => setProfileImage('')}
+                        className="text-xs font-semibold text-neutral-500 hover:text-red-650 transition-colors cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-neutral-450">JPG, PNG or WEBP. Max 2MB.</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tagline / Hook</label>
+                <input
+                  type="text"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                  placeholder="e.g. Professional Technology Filmmaker & Digital Storyteller"
+                />
+              </div>
               <div>
                 <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Bio / Description</label>
                 <textarea
@@ -333,10 +443,33 @@ const InfluencerDashboard = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Featured YouTube Video URL</label>
+                  <input
+                    type="text"
+                    value={featuredVideo}
+                    onChange={(e) => setFeaturedVideo(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Brands Collaborated With (Comma separated)</label>
+                  <input
+                    type="text"
+                    value={pastBrands}
+                    onChange={(e) => setPastBrands(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    placeholder="Samsung, Nike, Google, Amazon"
+                  />
+                </div>
+              </div>
+
               <div className="border-t border-neutral-100 pt-5 space-y-4">
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Social Channels Setup</h4>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs text-neutral-500">Instagram Handle</label>
                     <input
@@ -352,13 +485,24 @@ const InfluencerDashboard = () => {
                     <input
                       type="number"
                       value={instagramFollowers}
-                      onChange={(e) => setInstagramFollowers(e.target.value)}
+                      onChange={(e) => setInstagramFollowers(Number(e.target.value))}
                       className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500">Engagement Rate (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={instagramEngagement}
+                      onChange={(e) => setInstagramEngagement(Number(e.target.value))}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. 3.5"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs text-neutral-500">YouTube Channel Name</label>
                     <input
@@ -374,8 +518,19 @@ const InfluencerDashboard = () => {
                     <input
                       type="number"
                       value={youtubeFollowers}
-                      onChange={(e) => setYoutubeFollowers(e.target.value)}
+                      onChange={(e) => setYoutubeFollowers(Number(e.target.value))}
                       className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500">Engagement Rate (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={youtubeEngagement}
+                      onChange={(e) => setYoutubeEngagement(Number(e.target.value))}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. 4.8"
                     />
                   </div>
                 </div>
@@ -435,6 +590,79 @@ const InfluencerDashboard = () => {
                   className="rounded-lg border border-dashed border-neutral-300 w-full py-2 text-xs font-semibold text-neutral-500 hover:border-brand-500 hover:text-brand-600 transition-colors"
                 >
                   + Add Portfolio Item
+                </button>
+              </div>
+
+              <div className="border-t border-neutral-100 pt-5 space-y-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Pricing Packages & Services</h4>
+                {services.map((item, idx) => (
+                  <div key={idx} className="rounded-xl border border-neutral-200 p-3 bg-neutral-50/50">
+                    <div className="grid grid-cols-3 gap-3 mb-2">
+                      <div className="col-span-2">
+                        <label className="block text-[10px] text-neutral-450">Service/Package Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={item.title}
+                          onChange={(e) => {
+                            const updated = [...services];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setServices(updated);
+                          }}
+                          className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mt-1"
+                          placeholder="e.g. Dedicated YouTube Video Review"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-neutral-450">Price ($)</label>
+                        <input
+                          type="number"
+                          required
+                          value={item.price}
+                          onChange={(e) => {
+                            const updated = [...services];
+                            updated[idx] = { ...updated[idx], price: Number(e.target.value) };
+                            setServices(updated);
+                          }}
+                          className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mt-1"
+                          placeholder="e.g. 500"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] text-neutral-450">Delivery Time (Days)</label>
+                        <input
+                          type="number"
+                          required
+                          value={item.deliveryDays}
+                          onChange={(e) => {
+                            const updated = [...services];
+                            updated[idx] = { ...updated[idx], deliveryDays: Number(e.target.value) };
+                            setServices(updated);
+                          }}
+                          className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mt-1"
+                          placeholder="e.g. 7"
+                        />
+                      </div>
+                      <div className="flex items-end justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setServices(services.filter((_, i) => i !== idx))}
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold py-1.5"
+                        >
+                          Remove Package
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setServices([...services, { title: '', price: 0, deliveryDays: 5 }])}
+                  className="rounded-lg border border-dashed border-neutral-300 w-full py-2 text-xs font-semibold text-neutral-500 hover:border-brand-500 hover:text-brand-600 transition-colors"
+                >
+                  + Add Service Package
                 </button>
               </div>
 

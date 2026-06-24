@@ -15,6 +15,7 @@ import PricingPage from '../pages/PricingPage';
 import BlogPage from '../pages/BlogPage';
 import BlogPostPage from '../pages/BlogPostPage';
 import InfluencersDirectory from '../pages/InfluencersDirectory';
+import CreatorPortfolioPage from '../pages/CreatorPortfolioPage';
 import BrandsDirectory from '../pages/BrandsDirectory';
 import TermsPage from '../pages/TermsPage';
 import PrivacyPage from '../pages/PrivacyPage';
@@ -76,6 +77,7 @@ const AppRoutes = () => {
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/:slug" element={<BlogPostPage />} />
       <Route path="/influencers" element={<InfluencersDirectory />} />
+      <Route path="/influencer/:id" element={<CreatorPortfolioPage />} />
       <Route path="/brands" element={<BrandsDirectory />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
