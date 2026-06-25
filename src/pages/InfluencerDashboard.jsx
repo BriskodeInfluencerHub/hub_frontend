@@ -28,6 +28,14 @@ const InfluencerDashboard = () => {
   const [services, setServices] = useState([]);
   const [instagramEngagement, setInstagramEngagement] = useState(3.5);
   const [youtubeEngagement, setYoutubeEngagement] = useState(4.8);
+  const [audienceGenderMale, setAudienceGenderMale] = useState(50);
+  const [audienceGenderFemale, setAudienceGenderFemale] = useState(50);
+  const [audienceTopCountries, setAudienceTopCountries] = useState('');
+  const [audienceAgeRange, setAudienceAgeRange] = useState('');
+  const [contentFormats, setContentFormats] = useState('');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
+  const [faqs, setFaqs] = useState([]);
 
   const [submittingDeliverable, setSubmittingDeliverable] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
@@ -52,6 +60,14 @@ const InfluencerDashboard = () => {
         setPastBrands(p.pastBrands || '');
         setFeaturedVideo(p.featuredVideo || '');
         setServices(p.services || []);
+        setAudienceGenderMale(p.audienceGenderMale ?? 50);
+        setAudienceGenderFemale(p.audienceGenderFemale ?? 50);
+        setAudienceTopCountries(p.audienceTopCountries || '');
+        setAudienceAgeRange(p.audienceAgeRange || '');
+        setContentFormats(p.contentFormats || '');
+        setBusinessEmail(p.businessEmail || '');
+        setBusinessPhone(p.businessPhone || '');
+        setFaqs(p.faqs || []);
 
         const instaAcc = p.socialAccounts?.find(s => s.platform === 'instagram');
         if (instaAcc) {
@@ -103,7 +119,15 @@ const InfluencerDashboard = () => {
         tagline,
         pastBrands,
         featuredVideo,
-        services
+        services,
+        audienceGenderMale: Number(audienceGenderMale) || 50,
+        audienceGenderFemale: Number(audienceGenderFemale) || 50,
+        audienceTopCountries,
+        audienceAgeRange,
+        contentFormats,
+        businessEmail,
+        businessPhone,
+        faqs
       });
 
       alert('Profile updated successfully!');
@@ -466,6 +490,39 @@ const InfluencerDashboard = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Business Email</label>
+                  <input
+                    type="email"
+                    value={businessEmail}
+                    onChange={(e) => setBusinessEmail(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    placeholder="collabs@creator.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Business Phone</label>
+                  <input
+                    type="text"
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    placeholder="+1-234-567-890"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Content Formats</label>
+                  <input
+                    type="text"
+                    value={contentFormats}
+                    onChange={(e) => setContentFormats(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    placeholder="Reels, dedicated vids, unboxing"
+                  />
+                </div>
+              </div>
+
               <div className="border-t border-neutral-100 pt-5 space-y-4">
                 <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Social Channels Setup</h4>
 
@@ -531,6 +588,62 @@ const InfluencerDashboard = () => {
                       onChange={(e) => setYoutubeEngagement(Number(e.target.value))}
                       className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
                       placeholder="e.g. 4.8"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-neutral-100 pt-5 space-y-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Audience Demographics</h4>
+                <div className="grid grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs text-neutral-500">Audience Male (%)</label>
+                    <input
+                      type="number"
+                      value={audienceGenderMale}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setAudienceGenderMale(val);
+                        setAudienceGenderFemale(100 - val);
+                      }}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      min="0"
+                      max="100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500">Audience Female (%)</label>
+                    <input
+                      type="number"
+                      value={audienceGenderFemale}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setAudienceGenderFemale(val);
+                        setAudienceGenderMale(100 - val);
+                      }}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      min="0"
+                      max="100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500">Age Range / Split</label>
+                    <input
+                      type="text"
+                      value={audienceAgeRange}
+                      onChange={(e) => setAudienceAgeRange(e.target.value)}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. 18-24 (45%), 25-34 (35%)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-neutral-500">Top Countries</label>
+                    <input
+                      type="text"
+                      value={audienceTopCountries}
+                      onChange={(e) => setAudienceTopCountries(e.target.value)}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. India (50%), US (20%)"
                     />
                   </div>
                 </div>
@@ -663,6 +776,60 @@ const InfluencerDashboard = () => {
                   className="rounded-lg border border-dashed border-neutral-300 w-full py-2 text-xs font-semibold text-neutral-500 hover:border-brand-500 hover:text-brand-600 transition-colors"
                 >
                   + Add Service Package
+                </button>
+              </div>
+
+              <div className="border-t border-neutral-100 pt-5 space-y-4">
+                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Frequently Asked Questions (FAQs)</h4>
+                {faqs.map((item, idx) => (
+                  <div key={idx} className="rounded-xl border border-neutral-200 p-3 bg-neutral-50/50">
+                    <div className="mb-2">
+                      <label className="block text-[10px] text-neutral-450">Question</label>
+                      <input
+                        type="text"
+                        required
+                        value={item.question}
+                        onChange={(e) => {
+                          const updated = [...faqs];
+                          updated[idx] = { ...updated[idx], question: e.target.value };
+                          setFaqs(updated);
+                        }}
+                        className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mt-1"
+                        placeholder="e.g. What is your policy on revisions?"
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="block text-[10px] text-neutral-450">Answer</label>
+                      <textarea
+                        required
+                        value={item.answer}
+                        onChange={(e) => {
+                          const updated = [...faqs];
+                          updated[idx] = { ...updated[idx], answer: e.target.value };
+                          setFaqs(updated);
+                        }}
+                        className="block w-full rounded-lg border border-neutral-200 py-1.5 px-2.5 text-xs focus:border-brand-500 focus:outline-none bg-white mt-1"
+                        rows={2}
+                        placeholder="e.g. I offer 2 rounds of creative revisions for editing and compliance..."
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setFaqs(faqs.filter((_, i) => i !== idx))}
+                        className="text-xs text-red-500 hover:text-red-700 font-semibold"
+                      >
+                        Remove FAQ
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFaqs([...faqs, { question: '', answer: '' }])}
+                  className="rounded-lg border border-dashed border-neutral-300 w-full py-2 text-xs font-semibold text-neutral-500 hover:border-brand-500 hover:text-brand-600 transition-colors"
+                >
+                  + Add FAQ
                 </button>
               </div>
 
