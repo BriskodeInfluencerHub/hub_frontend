@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus, Check, X, ShieldAlert, Sparkles, ClipboardList, Wallet, UserCheck, Calendar, Globe, Instagram, Youtube, Twitter, Music, ExternalLink } from 'lucide-react';
+import { Plus, Check, X, ShieldAlert, Sparkles, ClipboardList, Wallet, UserCheck, Calendar, Globe, Instagram, Youtube, Twitter, Music, ExternalLink, MessageCircle } from 'lucide-react';
 
 const platformIcons = { instagram: Instagram, youtube: Youtube, twitter: Twitter, tiktok: Music };
 
 const BrandDashboard = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [user, setUser] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
@@ -14,6 +16,13 @@ const BrandDashboard = () => {
   const [activeTab, setActiveTab] = useState('campaigns');
   const [activeCampaignId, setActiveCampaignId] = useState(null);
   const [applicantFilter, setApplicantFilter] = useState('all');
+  const [releasingPayment, setReleasingPayment] = useState(null);
+  const [approvingDeliverables, setApprovingDeliverables] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewApplicationId, setReviewApplicationId] = useState(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const filteredApps = applicantFilter === 'all'
     ? selectedCampaignApps
@@ -52,9 +61,11 @@ const BrandDashboard = () => {
 
       const brandId = profileRes.data.user._id;
       const resActive = await api.get(`/campaigns?brandId=${brandId}&status=active`);
+      const resInProgress = await api.get(`/campaigns?brandId=${brandId}&status=in_progress`);
+      const resCompleted = await api.get(`/campaigns?brandId=${brandId}&status=completed`);
       const resPending = await api.get(`/campaigns?brandId=${brandId}&status=pending_approval`);
       const resDraft = await api.get(`/campaigns?brandId=${brandId}&status=draft`);
-      setCampaigns([...resActive.data, ...resPending.data, ...resDraft.data]);
+      setCampaigns([...resActive.data, ...resInProgress.data, ...resCompleted.data, ...resPending.data, ...resDraft.data]);
 
       const walletRes = await api.get('/payments/wallet');
       setPayments(walletRes.data.transactions || []);
@@ -108,6 +119,75 @@ const BrandDashboard = () => {
       setActiveTab('applicants');
     } catch (err) {
       alert('Failed to load applicants');
+    }
+  };
+
+  const handleReleaseEscrow = async (paymentId, applicationId) => {
+    setReleasingPayment(paymentId);
+    try {
+      await api.post(`/payments/release/${paymentId}`);
+      if (activeCampaignId) handleViewApplicants(activeCampaignId);
+      loadBrandData();
+      setReviewApplicationId(applicationId);
+      setReviewRating(0);
+      setReviewComment('');
+      setShowReviewModal(true);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to release escrow');
+    } finally {
+      setReleasingPayment(null);
+    }
+  };
+
+  const handleApproveDeliverables = async (applicationId) => {
+    setApprovingDeliverables(applicationId);
+    try {
+      await api.patch(`/applications/${applicationId}/approve-deliverables`);
+      if (activeCampaignId) handleViewApplicants(activeCampaignId);
+      loadBrandData();
+      setReviewApplicationId(applicationId);
+      setReviewRating(0);
+      setReviewComment('');
+      setShowReviewModal(true);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to approve deliverables');
+    } finally {
+      setApprovingDeliverables(null);
+    }
+  };
+
+  const handleStartChat = async (participantId) => {
+    try {
+      const res = await api.post('/chats', {
+        participantId,
+        campaignId: activeCampaignId,
+      });
+      navigate('/chat', { state: { activeChatId: res.data._id } });
+    } catch (err) {
+      alert('Failed to start chat');
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (reviewRating < 1) {
+      alert('Please select a rating');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', {
+        applicationId: reviewApplicationId,
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+      alert('Review submitted! Thank you for your feedback.');
+      setShowReviewModal(false);
+      setReviewApplicationId(null);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -230,9 +310,11 @@ const BrandDashboard = () => {
                         <p className="text-xs text-neutral-400 mt-1">Category: {c.category} | Budget: ${c.budget.toLocaleString()}</p>
                         <span className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase mt-2 ${
                           c.status === 'active' ? 'bg-green-50 text-green-600' :
+                          c.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
+                          c.status === 'completed' ? 'bg-brand-50 text-brand-600' :
                           c.status === 'pending_approval' ? 'bg-amber-50 text-amber-600' :
                           'bg-neutral-50 text-neutral-500'
-                        }`}>{c.status.replace('_', ' ')}</span>
+                        }`}>{c.status.replace(/_/g, ' ')}</span>
                       </div>
                       <button
                         onClick={() => handleViewApplicants(c._id)}
@@ -484,12 +566,14 @@ const BrandDashboard = () => {
                 <span>Total: <strong className="text-neutral-800">{selectedCampaignApps.length}</strong></span>
                 <span>Shortlisted: <strong className="text-amber-600">{selectedCampaignApps.filter(a => a.status === 'shortlisted').length}</strong></span>
                 <span>Approved: <strong className="text-green-600">{selectedCampaignApps.filter(a => a.status === 'approved').length}</strong></span>
+                <span>Delivered: <strong className="text-purple-600">{selectedCampaignApps.filter(a => a.status === 'delivered').length}</strong></span>
+                <span>Completed: <strong className="text-brand-600">{selectedCampaignApps.filter(a => a.status === 'completed').length}</strong></span>
               </div>
             </div>
 
             {/* Filter Tabs */}
             <div className="flex border-b border-neutral-200 mb-6 space-x-4">
-              {['all', 'applied', 'shortlisted', 'approved', 'rejected'].map((f) => (
+              {['all', 'applied', 'shortlisted', 'approved', 'delivered', 'completed', 'rejected'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setApplicantFilter(f)}
@@ -576,10 +660,23 @@ const BrandDashboard = () => {
                           </div>
                         )}
 
-                        {app.deliverablesUrl && (
+                        {app.deliverables && (app.deliverables.instagramPost || app.deliverables.youtubeVideo || app.deliverables.reelLink || app.deliverables.screenshot) && (
                           <div className="mt-3">
-                            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand-600 font-semibold">Deliverables Submitted</span>
-                            <a href={app.deliverablesUrl} target="_blank" rel="noreferrer" className="block text-xs font-semibold text-brand-600 hover:underline mt-1">View Post Url</a>
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Deliverables Submitted</span>
+                            <div className="flex flex-wrap gap-2 mt-1.5">
+                              {app.deliverables.instagramPost && (
+                                <a href={app.deliverables.instagramPost} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-600 hover:underline">Instagram Post</a>
+                              )}
+                              {app.deliverables.youtubeVideo && (
+                                <a href={app.deliverables.youtubeVideo} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:underline">YouTube Video</a>
+                              )}
+                              {app.deliverables.reelLink && (
+                                <a href={app.deliverables.reelLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-600 hover:underline">Reel</a>
+                              )}
+                              {app.deliverables.screenshot && (
+                                <a href={app.deliverables.screenshot} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 hover:underline">Screenshot</a>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -622,10 +719,37 @@ const BrandDashboard = () => {
                             </button>
                           </>
                         )}
+                        {app.status === 'delivered' && (
+                          <button
+                            onClick={() => handleApproveDeliverables(app._id)}
+                            disabled={approvingDeliverables === app._id}
+                            className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 w-full disabled:opacity-50"
+                          >
+                            {approvingDeliverables === app._id ? 'Approving...' : 'Approve & Complete'}
+                          </button>
+                        )}
+                        {app.status === 'completed' && app.payment?.escrowStatus === 'held' && (
+                          <button
+                            onClick={() => handleReleaseEscrow(app.payment._id, app._id)}
+                            disabled={releasingPayment === app.payment._id}
+                            className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 w-full disabled:opacity-50"
+                          >
+                            {releasingPayment === app.payment._id ? 'Releasing...' : 'Release Escrow'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleStartChat(app.influencer._id)}
+                          className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 w-full flex items-center justify-center gap-1"
+                        >
+                          <MessageCircle size={12} />
+                          Message
+                        </button>
                         <span className={`text-xs font-semibold capitalize px-2 py-0.5 rounded-full ${
                           app.status === 'approved' ? 'bg-green-50 text-green-600' :
                           app.status === 'rejected' ? 'bg-red-50 text-red-600' :
                           app.status === 'shortlisted' ? 'bg-amber-50 text-amber-600' :
+                          app.status === 'delivered' ? 'bg-purple-50 text-purple-600' :
+                          app.status === 'completed' ? 'bg-brand-50 text-brand-600' :
                           'bg-neutral-100 text-neutral-500'
                         }`}>{app.status}</span>
                       </div>
@@ -633,6 +757,61 @@ const BrandDashboard = () => {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {showReviewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl animate-fade-in">
+              <h3 className="text-base font-bold text-neutral-800 mb-2">Rate This Creator</h3>
+              <p className="text-xs text-neutral-500 mb-5">How was your experience working with this influencer?</p>
+              <form onSubmit={handleSubmitReview} className="space-y-5">
+                <div className="text-center">
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Rating</label>
+                  <div className="flex justify-center space-x-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewRating(star)}
+                        className={`text-3xl transition-all hover:scale-110 ${
+                          star <= reviewRating ? 'text-amber-400' : 'text-neutral-200'
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Review (optional)</label>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                    rows={3}
+                    placeholder="Share your thoughts on their work, communication, and professionalism..."
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewModal(false)}
+                    className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingReview || reviewRating < 1}
+                    className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
+                  >
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

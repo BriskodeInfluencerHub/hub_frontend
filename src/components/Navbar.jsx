@@ -54,13 +54,13 @@ const Navbar = () => {
 
           <div className="hidden md:flex md:items-center md:space-x-6">
             <Link to="/" className={`text-sm transition-colors font-display font-medium ${activeLink('/')}`}>Home</Link>
-            <Link to="/influencers" className={`text-sm transition-colors font-display font-medium ${activeLink('/influencers')}`}>Influencers</Link>
             <Link to="/brands" className={`text-sm transition-colors font-display font-medium ${activeLink('/brands')}`}>Brands</Link>
             <a href="/#how-it-works" className="text-sm transition-colors font-display font-medium text-neutral-400 hover:text-brand-400">How It Works</a>
 
             {user && (
               <>
                 <Link to="/dashboard" className={`text-sm transition-colors font-display font-medium ${activeLink('/dashboard')}`}>Dashboard</Link>
+                <Link to="/discovery" className={`text-sm transition-colors font-display font-medium ${activeLink('/discovery')}`}>Discover</Link>
                 <Link to="/chat" className={`text-sm transition-colors font-display font-medium ${activeLink('/chat')}`}>Messages</Link>
               </>
             )}
@@ -169,12 +169,12 @@ const Navbar = () => {
         <div className="border-b border-neutral-900 bg-neutral-950 md:hidden animate-fade-in text-white">
           <div className="space-y-1 px-2 pt-2 pb-4">
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Home</Link>
-            <Link to="/influencers" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Influencers</Link>
             <Link to="/brands" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Brands</Link>
             <a href="/#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">How It Works</a>
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Dashboard</Link>
+                <Link to="/discovery" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Discover</Link>
                 <Link to="/chat" onClick={() => setMobileMenuOpen(false)} className="block rounded-lg px-3 py-2 text-base font-semibold text-neutral-300 hover:bg-neutral-900 hover:text-white transition-colors">Messages</Link>
                 <button onClick={handleLogout} className="flex w-full items-center space-x-2 rounded-lg px-3 py-2 text-base font-semibold text-brand-400 hover:bg-brand-950/40 hover:text-brand-300 transition-colors">
                   <LogOut size={18} />

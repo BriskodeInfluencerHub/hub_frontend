@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MessageSquare, Sparkles } from 'lucide-react';
+import { Search, MessageSquare, Sparkles, MapPin, Users, TrendingUp, Tag } from 'lucide-react';
 
 const GeoParticleBackground = () => {
   const canvasRef = React.useRef(null);
@@ -142,8 +142,8 @@ const GeoParticleBackground = () => {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -159,24 +159,47 @@ const GeoParticleBackground = () => {
 const InfluencerDiscovery = () => {
   const navigate = useNavigate();
   const [influencers, setInfluencers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [platform, setPlatform] = useState('');
+  const [minFollowers, setMinFollowers] = useState('');
+  const [minEngagement, setMinEngagement] = useState('');
 
-  const loadInfluencers = async () => {
+  const loadInfluencers = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await api.get('/admin/users');
-      const creatorsOnly = res.data.filter(u => u.role === 'influencer');
-      setInfluencers(creatorsOnly);
+      const params = {};
+      if (search) params.search = search;
+      if (category) params.category = category;
+      if (location) params.location = location;
+      if (minFollowers) params.minFollowers = minFollowers;
+      if (minEngagement) params.minEngagement = minEngagement;
+
+      const res = await api.get('/users/influencers', { params });
+      let filtered = res.data;
+
+      if (platform) {
+        filtered = filtered.filter((inf) =>
+          (inf.socialAccounts || []).some(
+            (acct) => acct.platform?.toLowerCase() === platform.toLowerCase()
+          )
+        );
+      }
+
+      setInfluencers(filtered);
     } catch (e) {
       console.warn(e);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [search, category, location, platform, minFollowers, minEngagement]);
 
   useEffect(() => {
-    loadInfluencers();
-  }, []);
+    const timer = setTimeout(() => loadInfluencers(), 300);
+    return () => clearTimeout(timer);
+  }, [loadInfluencers]);
 
   const handleStartChat = async (creatorId) => {
     try {
@@ -187,17 +210,28 @@ const InfluencerDiscovery = () => {
     }
   };
 
-  const filteredInfluencers = influencers.filter((c) => {
-    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const formatCount = (n) => {
+    if (!n) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n.toString();
+  };
+
+  const maxFollowers = (socialAccounts) => {
+    if (!socialAccounts || socialAccounts.length === 0) return 0;
+    return Math.max(...socialAccounts.map((a) => a.followers || 0));
+  };
+
+  const maxEngagement = (socialAccounts) => {
+    if (!socialAccounts || socialAccounts.length === 0) return 0;
+    return Math.max(...socialAccounts.map((a) => a.engagementRate || 0));
+  };
 
   return (
     <div className="min-h-screen bg-[#050314] text-white flex flex-col font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
       <Navbar />
       <GeoParticleBackground />
 
-      {/* Glow Effects */}
       <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.1)_0%,rgba(14,129,236,0)_70%)] blur-[90px] pointer-events-none z-0" />
       <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.1)_0%,rgba(14,129,236,0)_70%)] blur-[100px] pointer-events-none z-0" />
 
@@ -207,7 +241,6 @@ const InfluencerDiscovery = () => {
           <span>Discover <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display">Content Creator Talent</span></span>
         </h2>
 
-        {/* Glassmorphic Search & Filters */}
         <div className="rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md p-5 shadow-2xl mb-8 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-1 w-full">
             <Search className="absolute inset-y-0 left-3.5 my-auto h-4 w-4 text-neutral-500" />
@@ -230,6 +263,11 @@ const InfluencerDiscovery = () => {
               <option value="tech">Tech</option>
               <option value="beauty">Beauty</option>
               <option value="lifestyle">Lifestyle</option>
+              <option value="food">Food</option>
+              <option value="travel">Travel</option>
+              <option value="fashion">Fashion</option>
+              <option value="fitness">Fitness</option>
+              <option value="gaming">Gaming</option>
             </select>
 
             <select
@@ -246,18 +284,50 @@ const InfluencerDiscovery = () => {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Location"
-              className="rounded-xl border border-neutral-800 py-2 px-3.5 text-xs bg-neutral-950/50 text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans w-28"
+              placeholder="Location (e.g. Odisha)"
+              className="rounded-xl border border-neutral-800 py-2 px-3.5 text-xs bg-neutral-950/50 text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans w-32"
             />
+
+            <select
+              value={minFollowers}
+              onChange={(e) => setMinFollowers(e.target.value)}
+              className="rounded-xl border border-neutral-800 py-2 px-3.5 text-xs bg-neutral-950/80 text-neutral-300 focus:outline-none focus:border-pink-500/60 cursor-pointer"
+            >
+              <option value="">Min Followers</option>
+              <option value="1000">1K+</option>
+              <option value="5000">5K+</option>
+              <option value="10000">10K+</option>
+              <option value="50000">50K+</option>
+              <option value="100000">100K+</option>
+              <option value="500000">500K+</option>
+              <option value="1000000">1M+</option>
+            </select>
+
+            <select
+              value={minEngagement}
+              onChange={(e) => setMinEngagement(e.target.value)}
+              className="rounded-xl border border-neutral-800 py-2 px-3.5 text-xs bg-neutral-950/80 text-neutral-300 focus:outline-none focus:border-pink-500/60 cursor-pointer"
+            >
+              <option value="">Min Engagement</option>
+              <option value="1">1%+</option>
+              <option value="2">2%+</option>
+              <option value="3">3%+</option>
+              <option value="5">5%+</option>
+              <option value="10">10%+</option>
+              <option value="15">15%+</option>
+            </select>
           </div>
         </div>
 
-        {/* Discovery Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInfluencers.length === 0 ? (
-            <div className="col-span-full text-center py-16 text-sm text-neutral-550 border border-dashed border-neutral-850 rounded-2xl bg-neutral-900/10">No influencers match your search filters</div>
+          {loading ? (
+            <div className="col-span-full text-center py-16 text-sm text-neutral-500">Searching creators...</div>
+          ) : influencers.length === 0 ? (
+            <div className="col-span-full text-center py-16 text-sm text-neutral-500 border border-dashed border-neutral-800 rounded-2xl bg-neutral-900/10">
+              No influencers match your search filters
+            </div>
           ) : (
-            filteredInfluencers.map((c) => (
+            influencers.map((c) => (
               <div key={c._id} className="rounded-2xl border border-neutral-800/80 bg-neutral-900/30 p-6 shadow-xl hover:border-neutral-700/80 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between min-h-[290px]">
                 <div>
                   <div className="flex items-center space-x-4 mb-4">
@@ -276,9 +346,39 @@ const InfluencerDiscovery = () => {
                       <p className="text-[10px] text-neutral-500 font-mono">Verified Platform Creator</p>
                     </div>
                   </div>
-                  <p className="text-xs text-neutral-450 mt-2 line-clamp-3 leading-relaxed border-t border-neutral-900 pt-3">
-                    Professional content creator focused on delivering high engagement rates and bespoke product reviews in Odisha.
-                  </p>
+
+                  {(c.categories?.length > 0 || c.location) && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {c.categories?.map((cat) => (
+                        <span key={cat} className="inline-flex items-center gap-1 rounded-full bg-pink-500/10 px-2.5 py-0.5 text-[10px] font-medium text-pink-300 border border-pink-500/20">
+                          <Tag size={10} />
+                          {cat}
+                        </span>
+                      ))}
+                      {c.location && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-medium text-indigo-300 border border-indigo-500/20">
+                          <MapPin size={10} />
+                          {c.location}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {(c.socialAccounts || []).slice(0, 2).map((acct, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-[11px] text-neutral-400">
+                        <span className="capitalize text-neutral-500">{acct.platform}</span>
+                        <span className="flex items-center gap-0.5" title="Followers">
+                          <Users size={11} className="text-neutral-500" />
+                          {formatCount(acct.followers)}
+                        </span>
+                        <span className="flex items-center gap-0.5" title="Engagement Rate">
+                          <TrendingUp size={11} className="text-neutral-500" />
+                          {acct.engagementRate ? `${acct.engagementRate}%` : '-'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="mt-6 border-t border-neutral-900 pt-4 flex justify-between items-center">

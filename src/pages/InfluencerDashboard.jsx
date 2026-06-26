@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera } from 'lucide-react';
+import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera, MessageCircle } from 'lucide-react';
 
 const InfluencerDashboard = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
 
   const [bio, setBio] = useState('');
@@ -39,7 +42,10 @@ const InfluencerDashboard = () => {
 
   const [submittingDeliverable, setSubmittingDeliverable] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
-  const [deliverablesUrl, setDeliverablesUrl] = useState('');
+  const [instagramPost, setInstagramPost] = useState('');
+  const [youtubeVideo, setYoutubeVideo] = useState('');
+  const [reelLink, setReelLink] = useState('');
+  const [screenshotUpload, setScreenshotUpload] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
   const loadDashboardData = async () => {
@@ -89,6 +95,12 @@ const InfluencerDashboard = () => {
 
       const appsRes = await api.get('/applications/my-applications');
       setApplications(appsRes.data);
+
+      const userRes = profileRes.data.user;
+      if (userRes?._id) {
+        const reviewsRes = await api.get(`/reviews/influencer/${userRes._id}`).catch(() => null);
+        if (reviewsRes) setReviews(reviewsRes.data);
+      }
     } catch (e) {
       console.warn('Dashboard data fetch warning', e);
     }
@@ -166,14 +178,31 @@ const InfluencerDashboard = () => {
     }
   };
 
+  const handleStartChat = async (participantId) => {
+    try {
+      const res = await api.post('/chats', { participantId });
+      navigate('/chat', { state: { activeChatId: res.data._id } });
+    } catch (err) {
+      alert('Failed to start chat');
+    }
+  };
+
   const handleSubmitDeliverables = async (e) => {
     e.preventDefault();
     setSubmittingDeliverable(true);
     try {
-      await api.patch(`/applications/${selectedAppId}/submit-deliverables`, { deliverablesUrl });
+      await api.patch(`/applications/${selectedAppId}/submit-deliverables`, {
+        instagramPost,
+        youtubeVideo,
+        reelLink,
+        screenshot: screenshotUpload,
+      });
       alert('Deliverables submitted successfully!');
       setSelectedAppId(null);
-      setDeliverablesUrl('');
+      setInstagramPost('');
+      setYoutubeVideo('');
+      setReelLink('');
+      setScreenshotUpload('');
       loadDashboardData();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to submit deliverables');
@@ -203,7 +232,7 @@ const InfluencerDashboard = () => {
       amount: t.amount,
     }));
 
-  const activeApps = applications.filter(a => a.status === 'approved');
+  const activeApps = applications.filter(a => a.status === 'approved' || a.status === 'delivered');
   const pendingApps = applications.filter(a => a.status === 'applied' || a.status === 'under_review' || a.status === 'shortlisted');
 
   return (
@@ -331,6 +360,46 @@ const InfluencerDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Rating & Reviews */}
+              <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4 border-b border-neutral-100 pb-3">
+                  <h3 className="text-sm font-bold text-neutral-800">Rating & Reviews</h3>
+                  <span className="text-amber-400 text-sm">★</span>
+                </div>
+                {(profile?.averageRating ?? 0) > 0 ? (
+                  <>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="text-2xl font-extrabold text-neutral-800">{profile.averageRating}</span>
+                      <div className="flex text-amber-400 text-sm">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star}>{star <= Math.round(profile.averageRating) ? '★' : '☆'}</span>
+                        ))}
+                      </div>
+                      <span className="text-xs text-neutral-400">({profile.reviewCount} review{profile.reviewCount !== 1 ? 's' : ''})</span>
+                    </div>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {reviews.map((r) => (
+                        <div key={r._id} className="rounded-xl bg-neutral-50 p-3 border border-neutral-100">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-amber-400 text-xs">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                              <span className="text-[10px] font-semibold text-neutral-500">{r.brand?.name || 'Brand'}</span>
+                            </div>
+                            <span className="text-[9px] text-neutral-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {r.comment && <p className="text-xs text-neutral-600 mt-1">{r.comment}</p>}
+                          {r.campaign?.title && (
+                            <p className="text-[10px] text-neutral-400 mt-1 italic">Campaign: {r.campaign.title}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-xs text-neutral-400">No reviews yet. Complete a campaign to receive your first rating!</div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -339,37 +408,81 @@ const InfluencerDashboard = () => {
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-bold text-neutral-800 mb-6">My Campaigns & Applications</h3>
             <div className="space-y-4">
-              {applications.length === 0 ? (
+                {applications.length === 0 ? (
                 <div className="text-center py-12 text-sm text-neutral-400">You haven't applied to any campaigns yet</div>
               ) : (
-                applications.map((app) => (
-                  <div key={app._id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-neutral-200 p-5 hover:border-neutral-300 transition-colors gap-4">
-                    <div>
-                      <h4 className="font-bold text-neutral-800">{app.campaign?.title}</h4>
-                      <p className="text-xs text-neutral-400 mt-1">Category: {app.campaign?.category} | Proposed: ${app.proposedRate}</p>
-                      {app.deliverablesUrl && (
-                        <a href={app.deliverablesUrl} target="_blank" rel="noreferrer" className="inline-block text-xs font-semibold text-brand-600 hover:underline mt-2">View Submitted Deliverables Link</a>
-                      )}
+                applications.map((app) => {
+                  const hasDeliverables = app.deliverables?.instagramPost || app.deliverables?.youtubeVideo || app.deliverables?.reelLink || app.deliverables?.screenshot;
+                  return (
+                    <div key={app._id} className="rounded-2xl border border-neutral-200 p-5 hover:border-neutral-300 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-neutral-800">{app.campaign?.title}</h4>
+                          <p className="text-xs text-neutral-400 mt-1">Category: {app.campaign?.category} | Proposed: ${app.proposedRate}</p>
+
+                          {(app.status === 'approved' || app.status === 'delivered' || app.status === 'completed') && app.campaign && (
+                            <div className="mt-3 rounded-xl bg-neutral-50 p-3 border border-neutral-100 text-xs text-neutral-600 space-y-1">
+                              <p><span className="font-semibold text-neutral-700">Instructions:</span> {app.campaign.description}</p>
+                              <p><span className="font-semibold text-neutral-700">Deadline:</span> {new Date(app.campaign.endDate).toLocaleDateString()}</p>
+                              <p><span className="font-semibold text-neutral-700">Target Audience:</span> {app.campaign.targetAudience || 'General'}</p>
+                            </div>
+                          )}
+
+                          {hasDeliverables && (
+                            <div className="mt-3 space-y-1">
+                              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Submitted Deliverables</span>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {app.deliverables?.instagramPost && (
+                                  <a href={app.deliverables.instagramPost} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-600 hover:underline">Instagram Post</a>
+                                )}
+                                {app.deliverables?.youtubeVideo && (
+                                  <a href={app.deliverables.youtubeVideo} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:underline">YouTube Video</a>
+                                )}
+                                {app.deliverables?.reelLink && (
+                                  <a href={app.deliverables.reelLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-600 hover:underline">Reel</a>
+                                )}
+                                {app.deliverables?.screenshot && (
+                                  <a href={app.deliverables.screenshot} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 hover:underline">Screenshot</a>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-3.5 shrink-0">
+                          <button
+                            onClick={() => handleStartChat(app.campaign?.brand?._id)}
+                            className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 flex items-center gap-1"
+                          >
+                            <MessageCircle size={12} />
+                            Message
+                          </button>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${app.status === 'approved' ? 'bg-green-50 text-green-600' :
+                              app.status === 'rejected' ? 'bg-red-50 text-red-600' :
+                                app.status === 'delivered' ? 'bg-purple-50 text-purple-600' :
+                                  app.status === 'completed' ? 'bg-brand-50 text-brand-600' :
+                                    'bg-amber-50 text-amber-600'
+                            }`}>
+                            {app.status}
+                          </span>
+                          {app.status === 'approved' && !hasDeliverables && (
+                            <button
+                              onClick={() => {
+                                setSelectedAppId(app._id);
+                                setInstagramPost('');
+                                setYoutubeVideo('');
+                                setReelLink('');
+                                setScreenshotUpload('');
+                              }}
+                              className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
+                            >
+                              Submit Work
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-3.5">
-                      <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${app.status === 'approved' ? 'bg-green-50 text-green-600' :
-                          app.status === 'rejected' ? 'bg-red-50 text-red-600' :
-                            app.status === 'completed' ? 'bg-brand-50 text-brand-600' :
-                              'bg-amber-50 text-amber-600'
-                        }`}>
-                        {app.status}
-                      </span>
-                      {app.status === 'approved' && !app.deliverablesUrl && (
-                        <button
-                          onClick={() => setSelectedAppId(app._id)}
-                          className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
-                        >
-                          Submit Work
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -904,20 +1017,50 @@ const InfluencerDashboard = () => {
 
       {selectedAppId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl animate-fade-in">
             <h3 className="text-base font-bold text-neutral-800 mb-4">Submit Campaign Deliverables</h3>
             <form onSubmit={handleSubmitDeliverables} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Social Post Link / Live URL</label>
+                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Instagram Post Link</label>
                 <input
                   type="url"
-                  required
-                  value={deliverablesUrl}
-                  onChange={(e) => setDeliverablesUrl(e.target.value)}
+                  value={instagramPost}
+                  onChange={(e) => setInstagramPost(e.target.value)}
                   className="mt-1 block w-full rounded-xl border border-neutral-200 py-3 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
-                  placeholder="https://www.instagram.com/p/yourpost"
+                  placeholder="https://www.instagram.com/p/..."
                 />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">YouTube Video Link</label>
+                <input
+                  type="url"
+                  value={youtubeVideo}
+                  onChange={(e) => setYoutubeVideo(e.target.value)}
+                  className="mt-1 block w-full rounded-xl border border-neutral-200 py-3 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Reel / Shorts Link</label>
+                <input
+                  type="url"
+                  value={reelLink}
+                  onChange={(e) => setReelLink(e.target.value)}
+                  className="mt-1 block w-full rounded-xl border border-neutral-200 py-3 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                  placeholder="https://www.instagram.com/reel/..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Screenshot / Proof URL</label>
+                <input
+                  type="url"
+                  value={screenshotUpload}
+                  onChange={(e) => setScreenshotUpload(e.target.value)}
+                  className="mt-1 block w-full rounded-xl border border-neutral-200 py-3 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                  placeholder="https://imgur.com/..."
+                />
+              </div>
+              <p className="text-[10px] text-neutral-400">Submit at least one link to your deliverables</p>
               <div className="flex justify-end space-x-3 pt-2">
                 <button
                   type="button"
@@ -928,7 +1071,7 @@ const InfluencerDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingDeliverable}
+                  disabled={submittingDeliverable || (!instagramPost && !youtubeVideo && !reelLink && !screenshotUpload)}
                   className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
                 >
                   {submittingDeliverable ? 'Submitting...' : 'Submit Work'}

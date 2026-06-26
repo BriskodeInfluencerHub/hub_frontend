@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { UserCheck, ShieldAlert, CheckCircle, XCircle, Database, Eye, ExternalLink, MapPin, Globe, Instagram, Youtube, Twitter, Music } from 'lucide-react';
+import { UserCheck, ShieldAlert, CheckCircle, XCircle, Database, Eye, ExternalLink, MapPin, Globe, Instagram, Youtube, Twitter, Music, Plus, Trash2, Users, DollarSign, TrendingUp } from 'lucide-react';
 
 const platformIcons = { instagram: Instagram, youtube: Youtube, twitter: Twitter, tiktok: Music };
 
@@ -11,9 +11,10 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [graphData, setGraphData] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [activeTab, setActiveTab] = useState('users');
+  const [newCategoryName, setNewCategoryName] = useState('');
 
-  // Profile review state
   const [reviewingUser, setReviewingUser] = useState(null);
   const [reviewProfile, setReviewProfile] = useState(null);
   const [loadingReview, setLoadingReview] = useState(false);
@@ -35,9 +36,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const res = await api.get('/admin/categories');
+      setCategories(res.data);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'categories') {
+      loadCategories();
+    }
+  }, [activeTab]);
 
   const openReview = async (userId) => {
     setLoadingReview(true);
@@ -97,14 +113,35 @@ const AdminDashboard = () => {
     setReviewingCampaign(null);
   };
 
-  const handleApproveCampaign = async (campaignId, approve) => {
+  const handleApproveCampaign = async (campaignId, approve, spam) => {
     try {
-      await api.patch(`/admin/campaigns/${campaignId}/approve`, { approve });
-      alert(approve ? 'Campaign approved!' : 'Campaign rejected');
+      await api.patch(`/admin/campaigns/${campaignId}/approve`, { approve, spam });
+      alert(spam ? 'Campaign rejected as spam' : (approve ? 'Campaign approved!' : 'Campaign rejected'));
       closeCampaignReview();
       loadAdminData();
     } catch (err) {
       alert('Action failed');
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await api.post('/admin/categories', { name: newCategoryName.trim() });
+      setNewCategoryName('');
+      loadCategories();
+    } catch (err) {
+      alert('Failed to create category');
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Delete this category?')) return;
+    try {
+      await api.delete(`/admin/categories/${id}`);
+      loadCategories();
+    } catch (err) {
+      alert('Failed to delete category');
     }
   };
 
@@ -128,117 +165,42 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="rounded-xl border border-neutral-200 bg-white p-5">
-            <span className="text-xs font-semibold text-neutral-400 uppercase">Total Creators</span>
-            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.totalInfluencers || 0}</p>
+            <span className="text-xs font-semibold text-neutral-400 uppercase flex items-center gap-1.5">
+              <Users size={14} className="text-neutral-400" />
+              Total Users
+            </span>
+            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.totalUsers || 0}</p>
           </div>
           <div className="rounded-xl border border-neutral-200 bg-white p-5">
-            <span className="text-xs font-semibold text-neutral-400 uppercase">Brands onboarded</span>
-            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.totalBrands || 0}</p>
-          </div>
-          <div className="rounded-xl border border-neutral-200 bg-white p-5">
-            <span className="text-xs font-semibold text-neutral-400 uppercase">Total Campaigns</span>
-            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.totalCampaigns || 0}</p>
-          </div>
-          <div className="rounded-xl border border-neutral-200 bg-white p-5">
-            <span className="text-xs font-semibold text-neutral-400 uppercase">Escrow Volume</span>
+            <span className="text-xs font-semibold text-neutral-400 uppercase flex items-center gap-1.5">
+              <DollarSign size={14} className="text-neutral-400" />
+              Total Revenue
+            </span>
             <p className="text-2xl font-extrabold text-brand-600 mt-1">${metrics.platformVolume?.toLocaleString() || 0}</p>
           </div>
-        </div>
-
-        <div className="flex border-b border-neutral-200 mb-6 space-x-4">
-          <button onClick={() => setActiveTab('reviews')} className={`pb-3 text-sm font-semibold border-b-2 transition-all ${activeTab === 'reviews' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Profile Reviews {(pendingInfluencers.length + pendingBrands.length) > 0 && <span className="ml-1 text-brand-500">({pendingInfluencers.length + pendingBrands.length})</span>}</button>
-          <button onClick={() => setActiveTab('users')} className={`pb-3 text-sm font-semibold border-b-2 transition-all ${activeTab === 'users' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>All Users</button>
-          <button onClick={() => setActiveTab('approvals')} className={`pb-3 text-sm font-semibold border-b-2 transition-all ${activeTab === 'approvals' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Campaign Approvals ({campaigns.length})</button>
-          <button onClick={() => setActiveTab('analytics')} className={`pb-3 text-sm font-semibold border-b-2 transition-all ${activeTab === 'analytics' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Signups Analytics</button>
-        </div>
-
-        {activeTab === 'reviews' && (
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-              <h3 className="text-base font-bold text-neutral-800 mb-1">Profile Reviews</h3>
-              <p className="text-xs text-neutral-400 mb-6">Review profiles before approving them on the platform.</p>
-
-              {pendingBrands.length > 0 && (
-                <div className="mb-8">
-                  <h4 className="text-sm font-bold text-neutral-700 mb-3 flex items-center space-x-2">
-                    <span>Brands Pending Verification</span>
-                    <span className="rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 text-[10px] font-bold">{pendingBrands.length}</span>
-                  </h4>
-                  <div className="space-y-3">
-                    {pendingBrands.map((u) => (
-                      <div key={u._id} className="rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-colors flex items-center justify-between gap-4">
-                        <div className="flex items-center space-x-4">
-                          {u.profileImage ? (
-                            <img src={`http://localhost:5001${u.profileImage}`} alt="" className="h-12 w-12 rounded-full object-cover border border-neutral-200" />
-                          ) : (
-                            <div className="h-12 w-12 rounded-full bg-brand-50 flex items-center justify-center font-bold text-brand-600 text-lg">
-                              {u.name.charAt(0)}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-bold text-neutral-800">{u.brandProfile?.companyName || u.name}</p>
-                            <p className="text-xs text-neutral-400">{u.email}</p>
-                            <div className="flex items-center space-x-3 mt-1">
-                              <span className="text-[10px] text-neutral-400">KYC: {u.brandProfile?.kycStatus || 'unverified'}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => openReview(u._id)}
-                          className="rounded-lg bg-brand-600 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
-                        >
-                          <Eye size={14} />
-                          <span>Review Brand</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <h4 className="text-sm font-bold text-neutral-700 mb-3 flex items-center space-x-2">
-                <span>Influencers Pending Verification</span>
-                {pendingInfluencers.length > 0 && <span className="rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 text-[10px] font-bold">{pendingInfluencers.length}</span>}
-              </h4>
-              {pendingInfluencers.length === 0 ? (
-                <div className="text-center py-8 text-sm text-neutral-400 bg-neutral-50 rounded-xl border border-neutral-100">All influencer profiles have been reviewed.</div>
-              ) : (
-                <div className="space-y-3">
-                  {pendingInfluencers.map((u) => (
-                    <div key={u._id} className="rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-colors flex items-center justify-between gap-4">
-                      <div className="flex items-center space-x-4">
-                        {u.profileImage ? (
-                          <img src={`http://localhost:5001${u.profileImage}`} alt="" className="h-12 w-12 rounded-full object-cover border border-neutral-200" />
-                        ) : (
-                          <div className="h-12 w-12 rounded-full bg-brand-50 flex items-center justify-center font-bold text-brand-600 text-lg">
-                            {u.name.charAt(0)}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-bold text-neutral-800">{u.name}</p>
-                          <p className="text-xs text-neutral-400">{u.email}</p>
-                          {u.influencerProfile && (
-                            <div className="flex items-center space-x-3 mt-1">
-                              <span className="text-[10px] text-neutral-400">Completion: {u.influencerProfile.profileCompletion}%</span>
-                              <span className="text-[10px] text-neutral-400">Categories: {u.influencerProfile.categories?.join(', ') || 'None'}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => openReview(u._id)}
-                        className="rounded-lg bg-brand-600 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
-                      >
-                        <Eye size={14} />
-                        <span>Review Profile</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="rounded-xl border border-neutral-200 bg-white p-5">
+            <span className="text-xs font-semibold text-neutral-400 uppercase flex items-center gap-1.5">
+              <TrendingUp size={14} className="text-neutral-400" />
+              Active Campaigns
+            </span>
+            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.activeCampaigns || 0}</p>
           </div>
-        )}
+          <div className="rounded-xl border border-neutral-200 bg-white p-5">
+            <span className="text-xs font-semibold text-neutral-400 uppercase flex items-center gap-1.5">
+              <Database size={14} className="text-neutral-400" />
+              Total Campaigns
+            </span>
+            <p className="text-2xl font-extrabold text-neutral-800 mt-1">{metrics.totalCampaigns || 0}</p>
+          </div>
+        </div>
+
+        <div className="flex border-b border-neutral-200 mb-6 space-x-4 overflow-x-auto">
+          <button onClick={() => setActiveTab('users')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'users' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>All Users</button>
+          <button onClick={() => setActiveTab('reviews')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'reviews' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Profile Reviews {(pendingInfluencers.length + pendingBrands.length) > 0 && <span className="ml-1 text-brand-500">({pendingInfluencers.length + pendingBrands.length})</span>}</button>
+          <button onClick={() => setActiveTab('approvals')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'approvals' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Campaign Approvals ({campaigns.length})</button>
+          <button onClick={() => setActiveTab('categories')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'categories' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Categories</button>
+          <button onClick={() => setActiveTab('analytics')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'analytics' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Signups Analytics</button>
+        </div>
 
         {activeTab === 'users' && (
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm overflow-x-auto">
@@ -334,6 +296,94 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'reviews' && (
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <h3 className="text-base font-bold text-neutral-800 mb-1">Profile Reviews</h3>
+              <p className="text-xs text-neutral-400 mb-6">Review profiles before approving them on the platform.</p>
+
+              {pendingBrands.length > 0 && (
+                <div className="mb-8">
+                  <h4 className="text-sm font-bold text-neutral-700 mb-3 flex items-center space-x-2">
+                    <span>Brands Pending Verification</span>
+                    <span className="rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 text-[10px] font-bold">{pendingBrands.length}</span>
+                  </h4>
+                  <div className="space-y-3">
+                    {pendingBrands.map((u) => (
+                      <div key={u._id} className="rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-colors flex items-center justify-between gap-4">
+                        <div className="flex items-center space-x-4">
+                          {u.profileImage ? (
+                            <img src={`http://localhost:5001${u.profileImage}`} alt="" className="h-12 w-12 rounded-full object-cover border border-neutral-200" />
+                          ) : (
+                            <div className="h-12 w-12 rounded-full bg-brand-50 flex items-center justify-center font-bold text-brand-600 text-lg">
+                              {u.name.charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-bold text-neutral-800">{u.brandProfile?.companyName || u.name}</p>
+                            <p className="text-xs text-neutral-400">{u.email}</p>
+                            <div className="flex items-center space-x-3 mt-1">
+                              <span className="text-[10px] text-neutral-400">KYC: {u.brandProfile?.kycStatus || 'unverified'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => openReview(u._id)}
+                          className="rounded-lg bg-brand-600 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
+                        >
+                          <Eye size={14} />
+                          <span>Review Brand</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <h4 className="text-sm font-bold text-neutral-700 mb-3 flex items-center space-x-2">
+                <span>Influencers Pending Verification</span>
+                {pendingInfluencers.length > 0 && <span className="rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 text-[10px] font-bold">{pendingInfluencers.length}</span>}
+              </h4>
+              {pendingInfluencers.length === 0 ? (
+                <div className="text-center py-8 text-sm text-neutral-400 bg-neutral-50 rounded-xl border border-neutral-100">All influencer profiles have been reviewed.</div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingInfluencers.map((u) => (
+                    <div key={u._id} className="rounded-xl border border-neutral-200 p-4 hover:border-neutral-300 transition-colors flex items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4">
+                        {u.profileImage ? (
+                          <img src={`http://localhost:5001${u.profileImage}`} alt="" className="h-12 w-12 rounded-full object-cover border border-neutral-200" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full bg-brand-50 flex items-center justify-center font-bold text-brand-600 text-lg">
+                            {u.name.charAt(0)}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-bold text-neutral-800">{u.name}</p>
+                          <p className="text-xs text-neutral-400">{u.email}</p>
+                          {u.influencerProfile && (
+                            <div className="flex items-center space-x-3 mt-1">
+                              <span className="text-[10px] text-neutral-400">Completion: {u.influencerProfile.profileCompletion}%</span>
+                              <span className="text-[10px] text-neutral-400">Categories: {u.influencerProfile.categories?.join(', ') || 'None'}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => openReview(u._id)}
+                        className="rounded-lg bg-brand-600 text-white px-4 py-2 text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
+                      >
+                        <Eye size={14} />
+                        <span>Review Profile</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'approvals' && (
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-bold text-neutral-800 mb-6">Pending Campaigns</h3>
@@ -364,6 +414,52 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'categories' && (
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-bold text-neutral-800 mb-1">Manage Categories</h3>
+            <p className="text-xs text-neutral-400 mb-6">Create and manage platform categories for campaigns and influencer profiles.</p>
+
+            <div className="flex items-center gap-3 mb-6">
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Category name (e.g. Fashion)"
+                className="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+              />
+              <button
+                onClick={handleCreateCategory}
+                className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
+              >
+                <Plus size={16} />
+                <span>Add Category</span>
+              </button>
+            </div>
+
+            {categories.length === 0 ? (
+              <div className="text-center py-12 text-sm text-neutral-400 bg-neutral-50 rounded-xl border border-neutral-100">
+                No categories yet. Add one above.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {categories.map((cat) => (
+                  <div key={cat._id} className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 flex items-center justify-between group hover:border-neutral-300 transition-colors">
+                    <span className="text-sm font-semibold text-neutral-700">{cat.name}</span>
+                    <button
+                      onClick={() => handleDeleteCategory(cat._id)}
+                      className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      title="Delete category"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'analytics' && (
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-bold text-neutral-800 mb-6">Monthly User Signups</h3>
@@ -382,7 +478,6 @@ const AdminDashboard = () => {
         )}
       </main>
 
-      {/* Campaign Review Modal */}
       {reviewingCampaign && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl animate-fade-in">
@@ -453,14 +548,21 @@ const AdminDashboard = () => {
 
               <div className="flex justify-end space-x-3 pt-4 border-t border-neutral-100">
                 <button
-                  onClick={() => handleApproveCampaign(reviewingCampaign._id, false)}
-                  className="rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                  onClick={() => handleApproveCampaign(reviewingCampaign._id, false, true)}
+                  className="rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+                >
+                  <XCircle size={16} className="inline mr-1" />
+                  Reject as Spam
+                </button>
+                <button
+                  onClick={() => handleApproveCampaign(reviewingCampaign._id, false, false)}
+                  className="rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
                 >
                   <XCircle size={16} className="inline mr-1" />
                   Reject Campaign
                 </button>
                 <button
-                  onClick={() => handleApproveCampaign(reviewingCampaign._id, true)}
+                  onClick={() => handleApproveCampaign(reviewingCampaign._id, true, false)}
                   className="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors flex items-center space-x-1.5"
                 >
                   <CheckCircle size={16} />
@@ -472,7 +574,6 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Profile Review Modal */}
       {reviewingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl animate-fade-in">
@@ -489,7 +590,6 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Basic Info */}
                   <div className="flex items-center space-x-4 pb-4 border-b border-neutral-100">
                     {reviewingUser.profileImage ? (
                       <img src={`http://localhost:5001${reviewingUser.profileImage}`} alt="" className="h-16 w-16 rounded-full object-cover border border-neutral-200" />
@@ -510,7 +610,6 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Brand-specific fields */}
                   {reviewingUser.role === 'brand' && (
                     <>
                       <div className="grid grid-cols-2 gap-4">
@@ -547,10 +646,8 @@ const AdminDashboard = () => {
                     </>
                   )}
 
-                  {/* Influencer-specific fields */}
                   {reviewingUser.role === 'influencer' && (
                     <>
-                      {/* Categories */}
                       <div>
                         <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Categories</span>
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -564,7 +661,6 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                      {/* Bio */}
                       {reviewProfile?.bio && (
                         <div>
                           <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Bio</span>
@@ -572,7 +668,6 @@ const AdminDashboard = () => {
                         </div>
                       )}
 
-                      {/* Social Accounts */}
                       <div>
                         <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Social Accounts</span>
                         <div className="space-y-2 mt-2">
@@ -601,7 +696,6 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                      {/* Portfolio */}
                       {reviewProfile?.portfolio?.length > 0 && (
                         <div>
                           <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Portfolio ({reviewProfile.portfolio.length} items)</span>
@@ -622,7 +716,6 @@ const AdminDashboard = () => {
                         </div>
                       )}
 
-                      {/* Profile Completion */}
                       <div className="rounded-xl bg-neutral-50 p-4 border border-neutral-100">
                         <div className="flex justify-between text-sm font-semibold text-neutral-600">
                           <span>Profile Completion</span>
@@ -635,7 +728,6 @@ const AdminDashboard = () => {
                     </>
                   )}
 
-                  {/* Actions */}
                   <div className="flex justify-end space-x-3 pt-4 border-t border-neutral-100">
                     <button
                       onClick={handleRejectProfile}
