@@ -221,8 +221,8 @@ const RegisterPage = () => {
                   onClick={() => setRole(r)}
                   className={`rounded-lg py-2 text-xs font-semibold capitalize transition-all cursor-pointer ${
                     role === r 
-                      ? 'bg-gradient-to-r from-pink-650 to-indigo-650 text-white shadow-md' 
-                      : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/40'
+                      ? 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white shadow-md' 
+                      : 'text-neutral-450 hover:text-white hover:bg-neutral-900/40'
                   }`}
                 >
                   {r}

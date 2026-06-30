@@ -19,6 +19,7 @@ import CreatorPortfolioPage from '../pages/CreatorPortfolioPage';
 import BrandsDirectory from '../pages/BrandsDirectory';
 import TermsPage from '../pages/TermsPage';
 import PrivacyPage from '../pages/PrivacyPage';
+import HowItWorksPage from '../pages/HowItWorksPage';
 
 // Dashboard & Protected Pages
 import InfluencerDashboard from '../pages/InfluencerDashboard';
@@ -81,6 +82,7 @@ const AppRoutes = () => {
       <Route path="/brands" element={<BrandsDirectory />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/how-it-works" element={<HowItWorksPage />} />
       
       {/* Protected Routes */}
       <Route 
@@ -92,14 +94,7 @@ const AppRoutes = () => {
         } 
       />
       
-      <Route 
-        path="/discovery" 
-        element={
-          <ProtectedRoute allowedRoles={['brand', 'admin', 'agency']}>
-            <InfluencerDiscovery />
-          </ProtectedRoute>
-        } 
-      />
+      <Route path="/discovery" element={<InfluencerDiscovery />} />
 
       <Route 
         path="/chat" 

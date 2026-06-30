@@ -18,7 +18,8 @@ import {
   Check,
   ChevronRight,
   Mail,
-  Linkedin
+  Linkedin,
+  Camera
 } from 'lucide-react';
 
 const GeoParticleBackground = () => {
@@ -191,6 +192,12 @@ const CreatorPortfolioPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [startingChat, setStartingChat] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
+
+  const getBackendUrl = () => {
+    const base = api.defaults.baseURL || '';
+    return base.endsWith('/api') ? base.slice(0, -4) : base;
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -287,20 +294,34 @@ const CreatorPortfolioPage = () => {
           </Link>
         </div>
 
-        {/* Full-width Hero Header Section matching the mock layout exactly */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-12 md:py-20 border-b border-neutral-900 mb-12 animate-fade-in">
+        {/* Full-width Hero Header Section redesigned for ultra-premium aesthetic */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center pt-4 pb-12 md:pt-6 md:pb-20 border-b border-neutral-900/80 mb-12 animate-fade-in relative z-10">
+          
           {/* Left Hero: Identity & Hook */}
           <div className="md:col-span-7 space-y-6">
-            <div className="space-y-3">
-              <h1 className="text-5xl md:text-7xl font-bold font-serif text-white tracking-tight leading-[1.1]">
-                {profile.user?.name || 'Unknown'}
+            
+            {/* Tagline Pill Badge */}
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono bg-pink-500/10 text-pink-400 border border-pink-500/20 shadow-sm">
+              <Sparkles size={10} className="text-pink-400" />
+              <span>{profile.tagline || 'Digital Creator'}</span>
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-extrabold font-sans tracking-tight leading-[1.05] flex flex-wrap items-center gap-x-4">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-pink-100 to-indigo-200">
+                  {profile.user?.name || 'Unknown'}
+                </span>
+                
+                {/* Verified Icon Badge */}
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 p-[1px] shadow-lg shadow-pink-500/25">
+                  <span className="flex h-full w-full items-center justify-center rounded-full bg-[#050314] text-pink-400">
+                    <Check size={14} strokeWidth={4} />
+                  </span>
+                </span>
               </h1>
-              <p className="text-lg md:text-xl text-neutral-400 font-sans tracking-wide">
-                {profile.tagline || 'Digital Creator'}
-              </p>
             </div>
             
-            <p className="text-sm md:text-base text-neutral-300 font-sans leading-relaxed max-w-xl">
+            <p className="text-sm md:text-base text-neutral-355 text-neutral-300 font-sans leading-relaxed max-w-xl">
               {profile.bio || 'Visual storyteller crafting premium creative content and narrative campaign integrations.'}
             </p>
 
@@ -310,7 +331,7 @@ const CreatorPortfolioPage = () => {
                   const target = document.getElementById('work-section');
                   if (target) target.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center rounded-full bg-white hover:bg-neutral-200 text-black text-xs font-extrabold uppercase px-6 py-3.5 tracking-wider transition-all duration-300 cursor-pointer shadow-lg animate-float-slow"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-white to-neutral-200 hover:from-pink-500 hover:to-indigo-500 text-black hover:text-white text-xs font-extrabold uppercase px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(255,255,255,0.05)] hover:shadow-[0_4px_20px_rgba(236,72,153,0.25)] hover:-translate-y-0.5 animate-float-slow"
               >
                 <span>VIEW MY WORK</span>
                 <span className="ml-2 text-[10px]">↓</span>
@@ -319,7 +340,7 @@ const CreatorPortfolioPage = () => {
               <button 
                 onClick={handleStartChat}
                 disabled={startingChat}
-                className="inline-flex items-center justify-center rounded-full border border-neutral-800 hover:bg-neutral-900/60 text-white text-xs font-bold px-6 py-3.5 tracking-wider transition-all duration-300 cursor-pointer"
+                className="inline-flex items-center justify-center rounded-full border border-neutral-800 hover:border-pink-500/40 hover:bg-pink-500/5 text-white text-xs font-bold px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
               >
                 <Mail size={14} className="mr-2 text-neutral-400" />
                 <span>{startingChat ? 'Loading...' : 'Get in touch'}</span>
@@ -342,7 +363,7 @@ const CreatorPortfolioPage = () => {
                     href={acc.link || '#'} 
                     target="_blank" 
                     rel="noreferrer"
-                    className="text-neutral-400 hover:text-white transition-colors"
+                    className="text-neutral-400 hover:text-pink-400 hover:scale-110 transition-all duration-300"
                   >
                     {getPlatformIconMonochrome(acc.platform)}
                   </a>
@@ -352,31 +373,33 @@ const CreatorPortfolioPage = () => {
               <div className="h-4 w-[1px] bg-neutral-800 hidden sm:block" />
 
               <div className="flex items-center text-xs text-neutral-400 font-sans">
-                <MapPin size={14} className="mr-2 text-neutral-500" />
+                <MapPin size={14} className="mr-2 text-pink-500" />
                 <span>{profile.location && profile.location !== 'Not Specified' ? profile.location : 'Mumbai, Maharashtra, India'}</span>
               </div>
             </div>
           </div>
 
-          {/* Right Hero: Creator Image with Verified overlay badge */}
+          {/* Right Hero: Creator Image with Glowing Pulse Ring */}
           <div className="md:col-span-5 flex justify-center md:justify-end">
-            <div className="relative w-full max-w-sm aspect-square p-3 bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 rounded-[2.5rem] shadow-2xl group">
-              <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-neutral-950">
-                {profile.user?.profileImage ? (
-                  <img 
-                    src={`http://localhost:5001${profile.user.profileImage}`} 
-                    alt={profile.user?.name || 'Creator'} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                  />
-                ) : (
-                  <div className="w-full h-full bg-indigo-500/10 flex items-center justify-center font-bold text-indigo-400 text-5xl font-serif">
-                    {(profile.user?.name || 'C').charAt(0)}
-                  </div>
-                )}
+            <div className="relative w-full max-w-sm aspect-square p-[3px] bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 rounded-[2.6rem] shadow-[0_0_30px_rgba(236,72,153,0.15)] group">
+              <div className="w-full h-full rounded-[2.5rem] p-2 bg-[#050314]">
+                <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-neutral-950">
+                  {profile.user?.profileImage ? (
+                    <img 
+                      src={`${getBackendUrl()}${profile.user.profileImage}`} 
+                      alt={profile.user?.name || 'Creator'} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-indigo-500/10 flex items-center justify-center font-bold text-indigo-400 text-5xl font-serif">
+                      {(profile.user?.name || 'C').charAt(0)}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Verified Badge overlay matching style spec exactly */}
-              <div className="absolute bottom-1 right-1 translate-x-1.5 translate-y-1.5 bg-[#0a0f1d]/90 backdrop-blur-md border border-neutral-800 rounded-full py-1.5 px-3 flex items-center space-x-1.5 shadow-2xl z-10">
+              {/* Verified Brand / Feature Badge */}
+              <div className="absolute bottom-2 right-2 translate-x-1 translate-y-1 bg-[#050314]/90 backdrop-blur-md border border-neutral-800 rounded-full py-2 px-4 flex items-center space-x-2 shadow-2xl z-10 transition-colors hover:border-pink-500/30">
                 <div className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center text-neutral-950">
                   <Check size={10} strokeWidth={4} />
                 </div>
@@ -387,6 +410,228 @@ const CreatorPortfolioPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Unified Visual Showcase Jigsaw Grid */}
+        {(profile.featuredVideo || profile.featuredVideo2 || profile.featuredVideo3 || (profile.photos && profile.photos.length > 0)) && (
+          <div className="bg-neutral-900/20 border border-neutral-900/60 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden mb-12 animate-fade-in z-10">
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/35 to-transparent" />
+            
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-neutral-900/60">
+              <h4 className="text-[12px] font-bold text-neutral-450 uppercase tracking-widest font-mono flex items-center space-x-2">
+                <Sparkles size={16} className="text-pink-400" />
+                <span>Visual Portfolio & Showcase</span>
+              </h4>
+              <span className="text-[9px] font-bold font-mono text-pink-400 bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20 uppercase tracking-wider">
+                {profile.videoLayout === '2p_1l' ? '2 Portrait + 1 Landscape' : '1 Portrait + 2 Landscape'}
+              </span>
+            </div>
+
+            {profile.videoLayout === '2p_1l' ? (
+              /* LAYOUT A: 2 Portrait videos on the Left, 1 Landscape video + Photos Gallery on the Right */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                {/* Left Column: 2 Portrait Videos side-by-side */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 1 (Portrait)</span>
+                    {profile.featuredVideo && getYouTubeEmbedUrl(profile.featuredVideo) ? (
+                      <div className="aspect-[9/16] w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo)}
+                          title="Creator Video 1"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-[9/16] w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic">
+                        Video 1 empty
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 2 (Portrait)</span>
+                    {profile.featuredVideo2 && getYouTubeEmbedUrl(profile.featuredVideo2) ? (
+                      <div className="aspect-[9/16] w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo2)}
+                          title="Creator Video 2"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-[9/16] w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic">
+                        Video 2 empty
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column: 1 Landscape Video + Photos Gallery stacked */}
+                <div className="flex flex-col gap-6">
+                  
+                  {/* Landscape Video 3 */}
+                  <div className="space-y-3">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 3 (Landscape)</span>
+                    {profile.featuredVideo3 && getYouTubeEmbedUrl(profile.featuredVideo3) ? (
+                      <div className="aspect-video w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo3)}
+                          title="Creator Video 3"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic">
+                        Video 3 empty
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Photo Showcase Section */}
+                  {profile.photos && profile.photos.length > 0 && (
+                    <div className="space-y-3">
+                      <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Showcase Gallery</span>
+                      <div className="grid grid-cols-3 gap-3">
+                        {profile.photos.map((photo, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => setLightboxImage(photo)}
+                            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-neutral-850 hover:border-pink-550/45 shadow-xl cursor-pointer group transition-all duration-500 hover:shadow-[0_0_15px_rgba(236,72,153,0.1)] hover:-translate-y-0.5"
+                          >
+                            <img 
+                              src={`${getBackendUrl()}${photo}`} 
+                              alt={`Gallery ${idx + 1}`} 
+                              className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-700" 
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <span className="text-[8px] font-mono tracking-widest uppercase text-white bg-pink-600/90 py-1 px-3 rounded-full border border-pink-500/50">
+                                Expand
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            ) : (
+              /* LAYOUT B: 1 Portrait video + Photo Section stacked on the Left, 2 Landscape videos stacked on the Right */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                {/* Left Column: 1 Portrait Video + Photo Section stacked */}
+                <div className="flex flex-col gap-6">
+                  
+                  {/* Portrait Video 1 */}
+                  <div className="space-y-4">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 1 (Portrait)</span>
+                    {profile.featuredVideo && getYouTubeEmbedUrl(profile.featuredVideo) ? (
+                      <div className="aspect-[9/16] w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300 max-w-sm mx-auto">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo)}
+                          title="Creator Video 1"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-[9/16] w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic max-w-sm mx-auto">
+                        Video 1 empty
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Photo Showcase Section */}
+                  {profile.photos && profile.photos.length > 0 && (
+                    <div className="space-y-3">
+                      <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Showcase Gallery</span>
+                      <div className="grid grid-cols-3 gap-3">
+                        {profile.photos.map((photo, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => setLightboxImage(photo)}
+                            className="relative aspect-[3/4] rounded-xl overflow-hidden border border-neutral-850 hover:border-pink-550/45 shadow-xl cursor-pointer group transition-all duration-500 hover:shadow-[0_0_15px_rgba(236,72,153,0.1)] hover:-translate-y-0.5"
+                          >
+                            <img 
+                              src={`${getBackendUrl()}${photo}`} 
+                              alt={`Gallery ${idx + 1}`} 
+                              className="w-full h-full object-cover transform group-hover:scale-103 transition-transform duration-700" 
+                            />
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <span className="text-[8px] font-mono tracking-widest uppercase text-white bg-pink-600/90 py-1 px-3 rounded-full border border-pink-500/50">
+                                Expand
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column: 2 Landscape Videos stacked */}
+                <div className="flex flex-col gap-6">
+                  
+                  {/* Landscape Video 2 */}
+                  <div className="space-y-3">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 2 (Landscape)</span>
+                    {profile.featuredVideo2 && getYouTubeEmbedUrl(profile.featuredVideo2) ? (
+                      <div className="aspect-video w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo2)}
+                          title="Creator Video 2"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic">
+                        Video 2 empty
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Landscape Video 3 */}
+                  <div className="space-y-3">
+                    <span className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider block">Video 3 (Landscape)</span>
+                    {profile.featuredVideo3 && getYouTubeEmbedUrl(profile.featuredVideo3) ? (
+                      <div className="aspect-video w-full rounded-2xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black transition-all hover:border-pink-500/30 duration-300">
+                        <iframe 
+                          className="w-full h-full"
+                          src={getYouTubeEmbedUrl(profile.featuredVideo3)}
+                          title="Creator Video 3"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video w-full rounded-2xl border border-dashed border-neutral-850 flex items-center justify-center bg-neutral-950/20 text-neutral-600 text-xs italic">
+                        Video 3 empty
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
@@ -588,47 +833,8 @@ const CreatorPortfolioPage = () => {
 
           </div>
 
-          {/* Right Column: Bio & Portfolio grid */}
+          {/* Right Column: Portfolio & Collaborations */}
           <div className="lg:col-span-8 space-y-6">
-
-            {/* YouTube Featured Video Intro */}
-            {profile.featuredVideo && getYouTubeEmbedUrl(profile.featuredVideo) && (
-              <div className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800/80 rounded-2xl p-6 shadow-xl space-y-4 relative overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
-                
-                <h4 className="text-[11px] font-bold text-neutral-450 uppercase tracking-widest font-mono flex items-center space-x-2">
-                  <Youtube size={14} className="text-red-500" />
-                  <span>Featured Video Presentation</span>
-                </h4>
-                
-                <div className="aspect-video w-full rounded-xl overflow-hidden border border-neutral-850 shadow-2xl relative bg-black animate-fade-in">
-                  <iframe 
-                    className="w-full h-full"
-                    src={getYouTubeEmbedUrl(profile.featuredVideo)}
-                    title="Creator Showcase Video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )}
-            
-            {/* About / Bio Panel */}
-            <div className="bg-neutral-900/40 backdrop-blur-md border border-[#1e1b4b]/30 rounded-2xl p-6 shadow-xl space-y-4 relative">
-              
-              {/* Highlight card border */}
-              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-pink-500/30 to-transparent" />
-
-              <h4 className="text-[11px] font-bold text-neutral-450 uppercase tracking-widest font-mono flex items-center space-x-2">
-                <UserIcon size={14} className="text-pink-400" />
-                <span>About Creator</span>
-              </h4>
-              
-              <div className="text-sm text-neutral-300 leading-relaxed font-sans whitespace-pre-line border-t border-neutral-900 pt-3">
-                {profile.bio || 'This creator hasn\'t specified their description yet.'}
-              </div>
-            </div>
 
             {/* Collaboration Packages */}
             {profile.services?.length > 0 && (
@@ -758,6 +964,28 @@ const CreatorPortfolioPage = () => {
         </div>
 
       </main>
+
+      {/* Photo Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md transition-all duration-300"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button 
+            onClick={() => setLightboxImage(null)} 
+            className="absolute top-6 right-6 text-white/70 hover:text-white text-3xl font-light font-mono transition-colors"
+          >
+            &times;
+          </button>
+          <div className="max-w-[90vw] max-h-[90vh] p-2 bg-neutral-900 border border-neutral-850 rounded-2xl overflow-hidden shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={`${getBackendUrl()}${lightboxImage}`} 
+              alt="Lightbox" 
+              className="max-w-[85vw] max-h-[80vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

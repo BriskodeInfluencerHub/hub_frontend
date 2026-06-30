@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../store/authContext';
 import Navbar from '../components/Navbar';
 import { 
   Search, 
@@ -198,6 +199,31 @@ const GeoParticleBackground = () => {
 };
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user && user.role === 'influencer') {
+      navigate(`/influencer/${user._id || user.id}`);
+    }
+  }, [user, navigate]);
+
+  const carouselImages = [
+    heroNeonCreator,
+    creatorAnanya,
+    creatorSubham,
+    creatorLipi,
+    creatorDebasis
+  ];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
   // Filters state for Discover Section
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [locationFilter, setLocationFilter] = useState('All');
@@ -301,9 +327,9 @@ const LandingPage = () => {
             
             {/* Left Column: Headline and CTAs */}
             <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
-              <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full text-xs font-semibold text-pink-400 uppercase tracking-widest font-display animate-pulse">
+              <div className="inline-flex items-center space-x-2 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full text-xs font-semibold text-pink-450 uppercase tracking-widest font-display animate-pulse">
                 <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
-                <span>Odisha Influencer Marketing Platform</span>
+                <span>India's First Brand-Influencer Connection Hub</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display leading-[1.1] text-white">
@@ -359,9 +385,10 @@ const LandingPage = () => {
               {/* Central Neon stream guy card */}
               <div className="relative w-[300px] h-[300px] rounded-3xl overflow-hidden border border-neutral-800 shadow-[0_0_50px_rgba(99,102,241,0.25)] bg-[#0c0a21]">
                 <img 
-                  src={heroNeonCreator} 
-                  alt="Creator Live streaming" 
-                  className="w-full h-full object-cover opacity-90"
+                  key={currentImageIndex}
+                  src={carouselImages[currentImageIndex]} 
+                  alt="Featured Creator" 
+                  className="w-full h-full object-cover opacity-90 animate-fade-in transition-all duration-700 ease-in-out"
                 />
                 {/* Floating Social Reels Icon overlay */}
                 <div className="absolute top-4 right-4 bg-pink-500/20 backdrop-blur-md border border-pink-500/30 p-2 rounded-xl shadow-lg">

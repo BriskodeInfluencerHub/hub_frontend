@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera, MessageCircle } from 'lucide-react';
+import { Award, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera, MessageCircle, Trash } from 'lucide-react';
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
+  const getBackendUrl = () => {
+    const base = api.defaults.baseURL || '';
+    return base.endsWith('/api') ? base.slice(0, -4) : base;
+  };
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -28,6 +32,11 @@ const InfluencerDashboard = () => {
   const [tagline, setTagline] = useState('');
   const [pastBrands, setPastBrands] = useState('');
   const [featuredVideo, setFeaturedVideo] = useState('');
+  const [featuredVideo2, setFeaturedVideo2] = useState('');
+  const [featuredVideo3, setFeaturedVideo3] = useState('');
+  const [videoLayout, setVideoLayout] = useState('1p_2l');
+  const [photos, setPhotos] = useState([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [services, setServices] = useState([]);
   const [instagramEngagement, setInstagramEngagement] = useState(3.5);
   const [youtubeEngagement, setYoutubeEngagement] = useState(4.8);
@@ -65,6 +74,10 @@ const InfluencerDashboard = () => {
         setTagline(p.tagline || '');
         setPastBrands(p.pastBrands || '');
         setFeaturedVideo(p.featuredVideo || '');
+        setFeaturedVideo2(p.featuredVideo2 || '');
+        setFeaturedVideo3(p.featuredVideo3 || '');
+        setVideoLayout(p.videoLayout || '1p_2l');
+        setPhotos(p.photos || []);
         setServices(p.services || []);
         setAudienceGenderMale(p.audienceGenderMale ?? 50);
         setAudienceGenderFemale(p.audienceGenderFemale ?? 50);
@@ -121,7 +134,7 @@ const InfluencerDashboard = () => {
         socialAccounts.push({ platform: 'youtube', username: youtube, followers: Number(youtubeFollowers), engagementRate: Number(youtubeEngagement) || 4.8 });
       }
 
-      await api.put('/users/profile', {
+      const res = await api.put('/users/profile', {
         profileImage,
         bio,
         location,
@@ -131,6 +144,10 @@ const InfluencerDashboard = () => {
         tagline,
         pastBrands,
         featuredVideo,
+        featuredVideo2,
+        featuredVideo3,
+        videoLayout,
+        photos,
         services,
         audienceGenderMale: Number(audienceGenderMale) || 50,
         audienceGenderFemale: Number(audienceGenderFemale) || 50,
@@ -143,8 +160,14 @@ const InfluencerDashboard = () => {
       });
 
       alert('Profile updated successfully!');
-      loadDashboardData();
-      setActiveTab('overview');
+      
+      const userId = res.data?.user?._id || res.data?.user?.id;
+      if (userId) {
+        navigate(`/influencer/${userId}`);
+      } else {
+        loadDashboardData();
+        setActiveTab('overview');
+      }
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update profile');
     }
@@ -176,6 +199,43 @@ const InfluencerDashboard = () => {
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit.');
+      return;
+    }
+
+    if (photos.length >= 3) {
+      alert('You can only upload up to 3 photos.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploadingPhoto(true);
+    try {
+      const res = await api.post('/users/upload-file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setPhotos(prev => [...prev, res.data.fileUrl]);
+      alert('Photo uploaded successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = (indexToRemove) => {
+    setPhotos(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleStartChat = async (participantId) => {
@@ -244,7 +304,7 @@ const InfluencerDashboard = () => {
           <div className="flex items-center space-x-4">
             <div className="h-14 w-14 rounded-full overflow-hidden bg-brand-50 border border-neutral-200 flex items-center justify-center font-bold text-brand-600 text-lg flex-shrink-0">
               {profileImage ? (
-                <img src={`http://localhost:5001${profileImage}`} className="h-full w-full object-cover" alt="Profile" />
+                <img src={`${getBackendUrl()}${profileImage}`} className="h-full w-full object-cover" alt="Profile" />
               ) : (
                 <UserIcon size={24} className="text-brand-500" />
               )}
@@ -496,7 +556,7 @@ const InfluencerDashboard = () => {
               <div className="flex items-center space-x-6 bg-neutral-50/50 p-4 rounded-xl border border-neutral-200/60 mb-6">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 border border-neutral-200 flex-shrink-0 group">
                   {profileImage ? (
-                    <img src={`http://localhost:5001${profileImage}`} className="h-full w-full object-cover" alt="Avatar Preview" />
+                    <img src={`${getBackendUrl()}${profileImage}`} className="h-full w-full object-cover" alt="Avatar Preview" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-neutral-450 font-bold text-2xl bg-neutral-100">
                       {userName ? userName.charAt(0).toUpperCase() : <UserIcon size={32} />}
@@ -580,17 +640,7 @@ const InfluencerDashboard = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Featured YouTube Video URL</label>
-                  <input
-                    type="text"
-                    value={featuredVideo}
-                    onChange={(e) => setFeaturedVideo(e.target.value)}
-                    className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
-                    placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Brands Collaborated With (Comma separated)</label>
                   <input
@@ -600,6 +650,112 @@ const InfluencerDashboard = () => {
                     className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
                     placeholder="Samsung, Nike, Google, Amazon"
                   />
+                </div>
+              </div>
+
+              {/* Video Portfolio Grid */}
+              <div className="border-t border-neutral-100 pt-6 space-y-4">
+                <h4 className="text-sm font-bold text-neutral-700">Video Portfolio (YouTube URLs)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Video 1 URL</label>
+                    <input
+                      type="text"
+                      value={featuredVideo}
+                      onChange={(e) => setFeaturedVideo(e.target.value)}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Video 2 URL</label>
+                    <input
+                      type="text"
+                      value={featuredVideo2}
+                      onChange={(e) => setFeaturedVideo2(e.target.value)}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Video 3 URL</label>
+                    <input
+                      type="text"
+                      value={featuredVideo3}
+                      onChange={(e) => setFeaturedVideo3(e.target.value)}
+                      className="mt-1 block w-full rounded-xl border border-neutral-200 py-2.5 px-3 text-sm focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                      placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Portfolio Video Layout Orientation</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setVideoLayout('1p_2l')}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all text-center ${videoLayout === '1p_2l' ? 'border-brand-500 bg-brand-50/20' : 'border-neutral-200 hover:border-neutral-300 bg-white'}`}
+                    >
+                      <div className="flex space-x-1.5 mb-2 items-center">
+                        <div className="w-4 h-8 bg-neutral-300 rounded-sm" />
+                        <div className="flex flex-col space-y-1">
+                          <div className="w-8 h-3.5 bg-neutral-300 rounded-sm" />
+                          <div className="w-8 h-3.5 bg-neutral-300 rounded-sm" />
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold text-neutral-700">1 Portrait + 2 Landscape</span>
+                      <span className="text-[10px] text-neutral-450">Perfect for shorts & longer showcases</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVideoLayout('2p_1l')}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all text-center ${videoLayout === '2p_1l' ? 'border-brand-500 bg-brand-50/20' : 'border-neutral-200 hover:border-neutral-300 bg-white'}`}
+                    >
+                      <div className="flex space-x-1.5 mb-2 items-center">
+                        <div className="w-4 h-8 bg-neutral-300 rounded-sm" />
+                        <div className="w-4 h-8 bg-neutral-300 rounded-sm" />
+                        <div className="w-8 h-4 bg-neutral-300 rounded-sm" />
+                      </div>
+                      <span className="text-xs font-bold text-neutral-700">2 Portrait + 1 Landscape</span>
+                      <span className="text-[10px] text-neutral-450">Great for multiple TikToks/reels and a cover</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Photos Gallery Section */}
+              <div className="border-t border-neutral-100 pt-6 space-y-4">
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-700">Showcase Photos (Max 3)</h4>
+                  <p className="text-xs text-neutral-400">Add up to 3 high-quality pictures to display on your public profile gallery.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {photos.map((photo, index) => (
+                    <div key={index} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50 group">
+                      <img src={`${getBackendUrl()}${photo}`} alt={`Showcase ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(index)}
+                        className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full p-1.5 shadow-md backdrop-blur-sm transition-colors"
+                      >
+                        <Trash size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {photos.length < 3 && (
+                    <label className={`flex flex-col items-center justify-center aspect-[3/4] rounded-xl border-2 border-dashed border-neutral-300 hover:border-brand-500 bg-neutral-50/50 cursor-pointer transition-all ${uploadingPhoto ? 'opacity-70 pointer-events-none' : ''}`}>
+                      <Camera className="text-neutral-400 mb-2 group-hover:text-brand-500" size={24} />
+                      <span className="text-xs font-semibold text-neutral-500">{uploadingPhoto ? 'Uploading...' : 'Upload Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        disabled={uploadingPhoto}
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
 

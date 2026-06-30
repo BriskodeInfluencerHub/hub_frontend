@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../store/authContext';
 import { Search, MessageSquare, Sparkles, MapPin, Users, TrendingUp, Tag } from 'lucide-react';
 
 const GeoParticleBackground = () => {
@@ -158,6 +159,7 @@ const GeoParticleBackground = () => {
 
 const InfluencerDiscovery = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [influencers, setInfluencers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -202,6 +204,11 @@ const InfluencerDiscovery = () => {
   }, [loadInfluencers]);
 
   const handleStartChat = async (creatorId) => {
+    if (!user) {
+      alert('Please log in first to chat with creators.');
+      navigate('/login');
+      return;
+    }
     try {
       const res = await api.post('/chats', { participantId: creatorId });
       navigate('/chat', { state: { activeChatId: res.data._id } });
