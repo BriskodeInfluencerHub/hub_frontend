@@ -151,7 +151,7 @@ const GeoParticleBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
+      className="theme-particle fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
     />
   );
 };
@@ -187,7 +187,7 @@ const InfluencersDirectory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050314] text-white flex flex-col font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
       <Navbar />
       <GeoParticleBackground />
 

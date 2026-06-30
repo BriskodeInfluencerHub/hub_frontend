@@ -150,7 +150,7 @@ const GeoParticleBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
+      className="theme-particle fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
     />
   );
 };
@@ -181,7 +181,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050314] text-white px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-pink-500 selection:text-white">
+    <div className="flex min-h-screen items-center justify-center bg-theme-bg text-theme-text px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans selection:bg-pink-500 selection:text-white">
       <GeoParticleBackground />
 
       {/* Glow Effects */}
@@ -189,13 +189,13 @@ const LoginPage = () => {
       <div className="absolute bottom-[10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.1)_0%,rgba(14,129,236,0)_70%)] blur-[90px] pointer-events-none z-0" />
 
       {/* Main Glass Form Card */}
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md p-8 shadow-2xl relative z-10 hover:border-neutral-700/80 transition-all duration-300">
+      <div className="w-full max-w-md space-y-8 rounded-2xl border border-theme-border bg-theme-surface backdrop-blur-md p-8 shadow-2xl relative z-10 hover:border-theme-border-light transition-all duration-300">
         <div className="text-center">
-          <Link to="/" className="text-2xl font-bold tracking-tight text-white font-display">
+          <Link to="/" className="text-2xl font-bold tracking-tight text-theme-text font-display">
             BRISKODE <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display">Influencer Hub</span>
           </Link>
-          <h2 className="mt-6 text-xl font-bold tracking-tight text-white font-display">Sign in to your account</h2>
-          <p className="mt-2 text-xs text-neutral-400 font-sans">
+          <h2 className="mt-6 text-xl font-bold tracking-tight text-theme-text font-display">Sign in to your account</h2>
+          <p className="mt-2 text-xs text-theme-text-secondary font-sans">
             Or{' '}
             <Link to="/register" className="font-semibold text-pink-400 hover:text-pink-300 transition-colors">
               create a new account for free
@@ -204,7 +204,7 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="rounded-xl bg-red-950/40 border border-red-800/60 p-3.5 text-xs font-semibold text-red-350 animate-fade-in">
+          <div className="rounded-xl bg-red-950/40 border border-red-800/60 p-3.5 text-xs font-semibold text-red-400 animate-fade-in">
             {error}
           </div>
         )}
@@ -212,7 +212,7 @@ const LoginPage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-[10px] font-bold text-neutral-450 uppercase tracking-widest font-mono">Email Address</label>
+              <label htmlFor="email" className="block text-[10px] font-bold text-theme-text-secondary uppercase tracking-widest font-mono">Email Address</label>
               <div className="relative mt-1.5">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                   <Mail size={16} />
@@ -223,14 +223,14 @@ const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full rounded-xl border border-neutral-800 bg-neutral-900/50 py-3 pl-10 pr-3 text-sm text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
+                  className="block w-full rounded-xl border border-theme-border bg-theme-surface py-3 pl-10 pr-3 text-sm text-theme-text placeholder-neutral-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
                   placeholder="name@company.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-[10px] font-bold text-neutral-450 uppercase tracking-widest font-mono">Password</label>
+              <label htmlFor="password" className="block text-[10px] font-bold text-theme-text-secondary uppercase tracking-widest font-mono">Password</label>
               <div className="relative mt-1.5">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-neutral-500">
                   <Lock size={16} />
@@ -241,7 +241,7 @@ const LoginPage = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full rounded-xl border border-neutral-800 bg-neutral-900/50 py-3 pl-10 pr-3 text-sm text-white placeholder-neutral-600 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
+                  className="block w-full rounded-xl border border-theme-border bg-theme-surface py-3 pl-10 pr-3 text-sm text-theme-text placeholder-neutral-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/10 focus:outline-none transition-all font-sans"
                   placeholder="••••••••"
                 />
               </div>

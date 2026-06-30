@@ -169,7 +169,7 @@ const GeoParticleBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
+      className="theme-particle fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
     />
   );
 };
@@ -243,12 +243,12 @@ const CreatorPortfolioPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050314] text-white flex flex-col font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans relative overflow-hidden">
         <Navbar />
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="space-y-4 text-center">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-pink-500 border-t-transparent mx-auto"></div>
-            <p className="text-sm text-neutral-450 font-mono tracking-wider">Loading portfolio data...</p>
+            <p className="text-sm text-theme-text-secondary font-mono tracking-wider">Loading portfolio data...</p>
           </div>
         </div>
       </div>
@@ -257,12 +257,12 @@ const CreatorPortfolioPage = () => {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#050314] text-white flex flex-col font-sans relative overflow-hidden">
+      <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans relative overflow-hidden">
         <Navbar />
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="max-w-md w-full bg-neutral-900/40 border border-neutral-800 rounded-2xl p-8 text-center space-y-6">
-            <h3 className="text-xl font-bold font-display text-white">Profile Not Found</h3>
-            <p className="text-sm text-neutral-450">{error || 'This creator profile might have been deleted or is not verified yet.'}</p>
+            <h3 className="text-xl font-bold font-display text-theme-text">Profile Not Found</h3>
+            <p className="text-sm text-theme-text-secondary">{error || 'This creator profile might have been deleted or is not verified yet.'}</p>
             <Link to="/influencers" className="inline-flex items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 py-2.5 px-5 text-sm font-semibold hover:bg-neutral-800">
               <ArrowLeft size={16} className="mr-2" />
               Back to Directory
@@ -276,7 +276,7 @@ const CreatorPortfolioPage = () => {
   const isOwnProfile = user && user._id === profile.user?._id;
 
   return (
-    <div className="min-h-screen bg-[#050314] text-white flex flex-col font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
       <Navbar />
       <GeoParticleBackground />
 
@@ -308,13 +308,13 @@ const CreatorPortfolioPage = () => {
 
             <div className="space-y-4">
               <h1 className="text-5xl md:text-7xl font-extrabold font-sans tracking-tight leading-[1.05] flex flex-wrap items-center gap-x-4">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-pink-100 to-indigo-200">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400">
                   {profile.user?.name || 'Unknown'}
                 </span>
                 
                 {/* Verified Icon Badge */}
                 <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 p-[1px] shadow-lg shadow-pink-500/25">
-                  <span className="flex h-full w-full items-center justify-center rounded-full bg-[#050314] text-pink-400">
+                  <span className="flex h-full w-full items-center justify-center rounded-full bg-theme-bg text-pink-400">
                     <Check size={14} strokeWidth={4} />
                   </span>
                 </span>
@@ -331,7 +331,7 @@ const CreatorPortfolioPage = () => {
                   const target = document.getElementById('work-section');
                   if (target) target.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-white to-neutral-200 hover:from-pink-500 hover:to-indigo-500 text-black hover:text-white text-xs font-extrabold uppercase px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(255,255,255,0.05)] hover:shadow-[0_4px_20px_rgba(236,72,153,0.25)] hover:-translate-y-0.5 animate-float-slow"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white text-xs font-extrabold uppercase px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(236,72,153,0.25)] hover:shadow-[0_4px_20px_rgba(236,72,153,0.4)] hover:-translate-y-0.5 animate-float-slow"
               >
                 <span>VIEW MY WORK</span>
                 <span className="ml-2 text-[10px]">↓</span>
@@ -340,7 +340,7 @@ const CreatorPortfolioPage = () => {
               <button 
                 onClick={handleStartChat}
                 disabled={startingChat}
-                className="inline-flex items-center justify-center rounded-full border border-neutral-800 hover:border-pink-500/40 hover:bg-pink-500/5 text-white text-xs font-bold px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center rounded-full border border-theme-border hover:border-pink-500/40 hover:bg-pink-500/5 text-theme-text text-xs font-bold px-8 py-4 tracking-wider transition-all duration-300 cursor-pointer hover:-translate-y-0.5"
               >
                 <Mail size={14} className="mr-2 text-neutral-400" />
                 <span>{startingChat ? 'Loading...' : 'Get in touch'}</span>
@@ -382,7 +382,7 @@ const CreatorPortfolioPage = () => {
           {/* Right Hero: Creator Image with Glowing Pulse Ring */}
           <div className="md:col-span-5 flex justify-center md:justify-end">
             <div className="relative w-full max-w-sm aspect-square p-[3px] bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 rounded-[2.6rem] shadow-[0_0_30px_rgba(236,72,153,0.15)] group">
-              <div className="w-full h-full rounded-[2.5rem] p-2 bg-[#050314]">
+              <div className="w-full h-full rounded-[2.5rem] p-2 bg-theme-bg">
                 <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-neutral-950">
                   {profile.user?.profileImage ? (
                     <img 
@@ -399,7 +399,7 @@ const CreatorPortfolioPage = () => {
               </div>
 
               {/* Verified Brand / Feature Badge */}
-              <div className="absolute bottom-2 right-2 translate-x-1 translate-y-1 bg-[#050314]/90 backdrop-blur-md border border-neutral-800 rounded-full py-2 px-4 flex items-center space-x-2 shadow-2xl z-10 transition-colors hover:border-pink-500/30">
+              <div className="absolute bottom-2 right-2 translate-x-1 translate-y-1 bg-theme-bg/90 backdrop-blur-md border border-theme-border rounded-full py-2 px-4 flex items-center space-x-2 shadow-2xl z-10 transition-colors hover:border-pink-500/30">
                 <div className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center text-neutral-950">
                   <Check size={10} strokeWidth={4} />
                 </div>

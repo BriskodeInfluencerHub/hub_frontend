@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './store/authContext';
+import { ThemeProvider } from './store/themeContext';
 import AppRoutes from './routes/AppRoutes';
 
 const queryClient = new QueryClient({
@@ -18,9 +19,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 antialiased selection:bg-brand-500 selection:text-white">
-            <AppRoutes />
-          </div>
+          <ThemeProvider>
+            <div className="min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white">
+              <AppRoutes />
+            </div>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

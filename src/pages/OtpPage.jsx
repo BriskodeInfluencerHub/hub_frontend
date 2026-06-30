@@ -35,14 +35,14 @@ const OtpPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-200 bg-white p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-theme-bg px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 rounded-2xl border border-theme-border bg-theme-surface p-8 shadow-xl">
         <div className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600 mb-4">
             <ShieldCheck size={28} />
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-neutral-800">OTP Verification</h2>
-          <p className="mt-2 text-xs text-neutral-400">
+          <h2 className="text-xl font-bold tracking-tight text-theme-text">OTP Verification</h2>
+          <p className="mt-2 text-xs text-theme-text-secondary">
             Enter the verification code sent to your email.
           </p>
           {otpCode && (
@@ -54,13 +54,13 @@ const OtpPage = () => {
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-xs font-semibold text-red-600 border border-red-200 animate-fade-in">
+          <div className="rounded-lg bg-red-950/40 border border-red-800/60 p-3 text-xs font-semibold text-red-400 animate-fade-in">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="rounded-lg bg-green-50 p-3 text-xs font-semibold text-green-600 border border-green-200 animate-fade-in">
+          <div className="rounded-lg bg-green-950/40 border border-green-800/60 p-3 text-xs font-semibold text-green-400 animate-fade-in">
             {success}
           </div>
         )}
@@ -69,21 +69,21 @@ const OtpPage = () => {
           <div className="space-y-4">
             {!initialEmail && (
               <div>
-                <label htmlFor="email" className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">Email Address</label>
+                <label htmlFor="email" className="block text-xs font-semibold text-theme-text-secondary uppercase tracking-wider">Email Address</label>
                 <input
                   id="email"
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full rounded-xl border border-neutral-200 py-3 px-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 bg-neutral-50/50"
+                  className="mt-1 block w-full rounded-xl border border-theme-border py-3 px-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 bg-theme-surface"
                   placeholder="name@company.com"
                 />
               </div>
             )}
 
             <div>
-              <label htmlFor="code" className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider">6-Digit Verification Code</label>
+              <label htmlFor="code" className="block text-xs font-semibold text-theme-text-secondary uppercase tracking-wider">6-Digit Verification Code</label>
               <input
                 id="code"
                 type="text"
@@ -91,7 +91,7 @@ const OtpPage = () => {
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                className="mt-1 block w-full text-center tracking-widest text-lg font-bold rounded-xl border border-neutral-200 py-3 px-3 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 bg-neutral-50/50"
+                className="mt-1 block w-full text-center tracking-widest text-lg font-bold rounded-xl border border-theme-border py-3 px-3 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 bg-theme-surface"
                 placeholder="000000"
               />
             </div>

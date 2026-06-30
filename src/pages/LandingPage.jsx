@@ -193,7 +193,7 @@ const GeoParticleBackground = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
+      className="theme-particle fixed inset-0 w-full h-full pointer-events-none z-0 bg-transparent"
     />
   );
 };
@@ -311,7 +311,7 @@ const LandingPage = () => {
   });
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#050314] text-white font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
+    <div className="flex min-h-screen flex-col bg-theme-bg text-theme-text font-sans overflow-x-hidden selection:bg-pink-500 selection:text-white relative">
       <Navbar />
       <GeoParticleBackground />
 
@@ -339,7 +339,7 @@ const LandingPage = () => {
                 </span>
               </h1>
 
-              <p className="max-w-xl text-neutral-400 text-base leading-relaxed mx-auto lg:mx-0 font-sans">
+              <p className="max-w-xl text-theme-text-secondary text-base leading-relaxed mx-auto lg:mx-0 font-sans">
                 Connect your brand with trusted, verified influencers across Odisha and beyond. Our platform makes influencer marketing simple, transparent, and result-driven by helping brands discover authentic creators at genuine prices.
               </p>
 
@@ -517,7 +517,7 @@ const LandingPage = () => {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-20 border-t border-neutral-900 bg-[#07051a]/40 relative z-10">
+      <section className="py-20 border-t border-theme-border bg-theme-bg-alt relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-extrabold font-display text-white">Why Choose Us?</h2>
@@ -754,7 +754,7 @@ const LandingPage = () => {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 border-t border-neutral-900 bg-[#07051a]/20 relative z-10">
+      <section id="how-it-works" className="py-20 border-t border-theme-border bg-theme-bg-alt relative z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-16">
