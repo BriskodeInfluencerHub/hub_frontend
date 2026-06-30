@@ -975,8 +975,8 @@ const LandingPage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-2">
-              <span className="text-white font-display font-bold text-sm tracking-wide">BRISKODE</span>
-              <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display text-sm">Influencer Hub</span>
+              <span className="text-white font-display font-bold text-sm tracking-wide">Odisha</span>
+              <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display text-sm">Influencer Market</span>
             </div>
             <div className="flex space-x-6 text-[11px]">
               <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
@@ -985,7 +985,7 @@ const LandingPage = () => {
               <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             </div>
             <div>
-              <p>&copy; {new Date().getFullYear()} BRISKODE. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} Odisha Influencer Market. All rights reserved.</p>
             </div>
           </div>
         </div>

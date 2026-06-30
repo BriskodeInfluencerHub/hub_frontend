@@ -295,7 +295,7 @@ const HowItWorksPage = () => {
           <div className="bg-gradient-to-br from-neutral-900/30 to-neutral-950/60 border border-neutral-900/60 rounded-3xl p-8 shadow-2xl space-y-6">
             <h3 className="text-lg font-bold font-display text-white">Trust & Security (Escrow Guarantee)</h3>
             <p className="text-xs text-neutral-400 leading-relaxed font-sans">
-              BRISKODE eliminates the classic payment friction. Brands pre-fund campaigns which holds budgets securely. Creators publish content with complete peace of mind, knowing the payment is already locked and will release instantly when social links are validated.
+              Odisha Influencer Market eliminates the classic payment friction. Brands pre-fund campaigns which holds budgets securely. Creators publish content with complete peace of mind, knowing the payment is already locked and will release instantly when social links are validated.
             </p>
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-neutral-950/40 border border-neutral-900">

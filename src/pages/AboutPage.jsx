@@ -14,7 +14,7 @@ const AboutPage = () => {
             Slaying payment delays & follower inflation.
           </h1>
           <p className="mt-4 text-sm text-neutral-500 leading-relaxed">
-            BRISKODE was born out of a simple observation: brands struggle to find creators who drive actual conversions, and creators struggle to get paid on time. We built a unified platform to fix both.
+            Odisha Influencer Market was born out of a simple observation: brands struggle to find creators who drive actual conversions, and creators struggle to get paid on time. We built a unified platform to fix both.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ const AboutPage = () => {
           <p className="font-display font-semibold text-lg text-brand-900 leading-relaxed">
             "We aren't building a B2B middleware platform. We are building the commercial framework that supports creator culture."
           </p>
-          <p className="text-xs text-brand-600 mt-4 uppercase font-bold tracking-wider font-display">— BRISKODE Collective</p>
+          <p className="text-xs text-brand-600 mt-4 uppercase font-bold tracking-wider font-display">— Odisha Influencer Market Collective</p>
         </div>
       </main>
     </div>

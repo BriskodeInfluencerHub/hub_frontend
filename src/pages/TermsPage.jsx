@@ -15,7 +15,7 @@ const TermsPage = () => {
         <section className="space-y-4 text-sm font-sans text-neutral-600 leading-relaxed">
           <h3 className="text-base font-bold text-neutral-800 font-display">1. Escrow Payout Holds</h3>
           <p>
-            BRISKODE provides a secure platform wallet mechanism. When a Brand hires a Creator, the campaign budget is immediately drawn from the Brand account and held in escrow. Payouts are released once post links are submitted and verified.
+            Odisha Influencer Market provides a secure platform wallet mechanism. When a Brand hires a Creator, the campaign budget is immediately drawn from the Brand account and held in escrow. Payouts are released once post links are submitted and verified.
           </p>
 
           <h3 className="text-base font-bold text-neutral-800 font-display">2. Creator Deliverables</h3>

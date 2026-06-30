@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { UserCheck, ShieldAlert, CheckCircle, XCircle, Database, Eye, ExternalLink, MapPin, Globe, Instagram, Youtube, Twitter, Music, Plus, Trash2, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { UserCheck, ShieldAlert, CheckCircle, XCircle, Database, Eye, ExternalLink, MapPin, Globe, Instagram, Youtube, Twitter, Music, Plus, Trash2, Users, DollarSign, TrendingUp, ClipboardList, UserPlus, Clock, Calendar } from 'lucide-react';
 
 const platformIcons = { instagram: Instagram, youtube: Youtube, twitter: Twitter, tiktok: Music };
 
@@ -19,6 +19,13 @@ const AdminDashboard = () => {
   const [reviewProfile, setReviewProfile] = useState(null);
   const [loadingReview, setLoadingReview] = useState(false);
   const [reviewingCampaign, setReviewingCampaign] = useState(null);
+
+  const [campaignRequests, setCampaignRequests] = useState([]);
+  const [coordinators, setCoordinators] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [assignCoordinatorId, setAssignCoordinatorId] = useState('');
+  const [coordinatorForm, setCoordinatorForm] = useState({ name: '', email: '', phone: '', password: '', assignedRegion: '' });
+  const [showCoordinatorForm, setShowCoordinatorForm] = useState(false);
 
   const loadAdminData = async () => {
     try {
@@ -49,9 +56,33 @@ const AdminDashboard = () => {
     loadAdminData();
   }, []);
 
+  const loadCampaignRequests = async () => {
+    try {
+      const res = await api.get('/admin/campaign-requests');
+      setCampaignRequests(res.data);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
+  const loadCoordinators = async () => {
+    try {
+      const res = await api.get('/admin/coordinators');
+      setCoordinators(res.data);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'categories') {
       loadCategories();
+    }
+    if (activeTab === 'requests') {
+      loadCampaignRequests();
+    }
+    if (activeTab === 'coordinators') {
+      loadCoordinators();
     }
   }, [activeTab]);
 
@@ -145,6 +176,79 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleAssignCoordinator = async (requestId) => {
+    if (!assignCoordinatorId) return;
+    try {
+      await api.patch(`/admin/campaign-requests/${requestId}/status`, {
+        status: 'assigned',
+        assignedCoordinator: assignCoordinatorId,
+      });
+      alert('Campaign assigned to coordinator!');
+      setSelectedRequest(null);
+      setAssignCoordinatorId('');
+      loadCampaignRequests();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to assign');
+    }
+  };
+
+  const handleUpdateRequestStatus = async (requestId, status) => {
+    try {
+      await api.patch(`/admin/campaign-requests/${requestId}/status`, { status });
+      alert(`Request ${status}`);
+      loadCampaignRequests();
+      if (selectedRequest?._id === requestId) {
+        const updated = campaignRequests.find((r) => r._id === requestId);
+        setSelectedRequest(updated || null);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update');
+    }
+  };
+
+  const handleCreateCoordinator = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/coordinators', coordinatorForm);
+      alert('Coordinator created successfully!');
+      setShowCoordinatorForm(false);
+      setCoordinatorForm({ name: '', email: '', phone: '', password: '', assignedRegion: '' });
+      loadCoordinators();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to create coordinator');
+    }
+  };
+
+  const handleToggleCoordinator = async (id, isActive) => {
+    try {
+      await api.patch(`/admin/coordinators/${id}`, { isActive: !isActive });
+      loadCoordinators();
+    } catch (err) {
+      alert('Failed to update coordinator');
+    }
+  };
+
+  const handleDeleteCoordinator = async (id) => {
+    if (!window.confirm('Remove this coordinator? Their assigned campaigns will be unassigned.')) return;
+    try {
+      await api.delete(`/admin/coordinators/${id}`);
+      loadCoordinators();
+    } catch (err) {
+      alert('Failed to remove coordinator');
+    }
+  };
+
+  const requestStatusIcon = (status) => {
+    switch (status) {
+      case 'pending': return <Clock size={14} className="text-amber-500" />;
+      case 'approved': return <CheckCircle size={14} className="text-green-500" />;
+      case 'rejected': return <XCircle size={14} className="text-red-500" />;
+      case 'assigned': return <UserCheck size={14} className="text-blue-500" />;
+      case 'completed': return <CheckCircle size={14} className="text-brand-500" />;
+      default: return null;
+    }
+  };
+
   const pendingInfluencers = users.filter(
     (u) => u.role === 'influencer' && u.status === 'active' && !u.influencerProfile?.isVerified
   );
@@ -200,6 +304,8 @@ const AdminDashboard = () => {
           <button onClick={() => setActiveTab('approvals')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'approvals' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Campaign Approvals ({campaigns.length})</button>
           <button onClick={() => setActiveTab('categories')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'categories' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Categories</button>
           <button onClick={() => setActiveTab('analytics')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'analytics' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Signups Analytics</button>
+          <button onClick={() => setActiveTab('requests')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'requests' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Campaign Requests</button>
+          <button onClick={() => setActiveTab('coordinators')} className={`pb-3 text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${activeTab === 'coordinators' ? 'border-brand-500 text-brand-600' : 'border-transparent text-neutral-500'}`}>Coordinators</button>
         </div>
 
         {activeTab === 'users' && (
@@ -474,6 +580,185 @@ const AdminDashboard = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'requests' && (
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-bold text-neutral-800 mb-6 flex items-center space-x-2">
+              <ClipboardList size={18} className="text-brand-500" />
+              <span>Incoming Campaign Requests</span>
+            </h3>
+            {campaignRequests.length === 0 ? (
+              <div className="text-center py-12 text-sm text-neutral-400">No campaign requests yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {campaignRequests.map((req) => (
+                  <div key={req._id} className="rounded-2xl border border-neutral-200 p-5 hover:border-neutral-300 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h4 className="font-bold text-neutral-800">{req.title}</h4>
+                          <span className={`inline-flex items-center space-x-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                            req.status === 'pending' ? 'bg-amber-50 text-amber-600' :
+                            req.status === 'approved' ? 'bg-green-50 text-green-600' :
+                            req.status === 'rejected' ? 'bg-red-50 text-red-600' :
+                            req.status === 'assigned' ? 'bg-blue-50 text-blue-600' :
+                            'bg-brand-50 text-brand-600'
+                          }`}>
+                            {requestStatusIcon(req.status)}
+                            <span>{req.status}</span>
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">{req.description}</p>
+                        <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-neutral-400">
+                          <span className="flex items-center gap-1"><UserCheck size={12} />{req.brand?.name}</span>
+                          {req.location && <span className="flex items-center gap-1"><MapPin size={12} />{req.location}</span>}
+                          {req.budget > 0 && <span className="flex items-center gap-1"><DollarSign size={12} />${req.budget.toLocaleString()}</span>}
+                          {req.timeline && <span className="flex items-center gap-1"><Calendar size={12} />{req.timeline}</span>}
+                        </div>
+                        {req.assignedCoordinator && (
+                          <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                            <UserCheck size={12} />
+                            Assigned to: {req.assignedCoordinator.name}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setSelectedRequest(selectedRequest?._id === req._id ? null : req)}
+                        className="rounded-lg bg-brand-50 text-brand-600 px-3 py-1.5 text-xs font-semibold hover:bg-brand-100 shrink-0"
+                      >
+                        {selectedRequest?._id === req._id ? 'Close' : 'Manage'}
+                      </button>
+                    </div>
+
+                    {selectedRequest?._id === req._id && (
+                      <div className="mt-4 pt-4 border-t border-neutral-100 space-y-4">
+                        {req.status === 'pending' && (
+                          <div className="flex space-x-2">
+                            <button onClick={() => handleUpdateRequestStatus(req._id, 'approved')} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">Approve</button>
+                            <button onClick={() => handleUpdateRequestStatus(req._id, 'rejected')} className="rounded-lg bg-red-50 text-red-600 px-3 py-1.5 text-xs font-semibold hover:bg-red-100">Reject</button>
+                          </div>
+                        )}
+                        {coordinators.length > 0 && req.status === 'approved' && (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={assignCoordinatorId}
+                              onChange={(e) => setAssignCoordinatorId(e.target.value)}
+                              className="rounded-xl border border-neutral-200 py-1.5 px-3 text-xs focus:border-brand-500 focus:outline-none bg-neutral-50/50"
+                            >
+                              <option value="">Select coordinator...</option>
+                              {coordinators.filter((c) => c.isActive).map((c) => (
+                                <option key={c._id} value={c.user?._id}>{c.user?.name} ({c.assignedRegion || 'No region'})</option>
+                              ))}
+                            </select>
+                            <button onClick={() => handleAssignCoordinator(req._id)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">Assign</button>
+                          </div>
+                        )}
+                        {(req.status === 'assigned' || req.status === 'completed') && (
+                          <div className="flex space-x-2">
+                            {req.status === 'assigned' && (
+                              <button onClick={() => handleUpdateRequestStatus(req._id, 'completed')} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">Mark Completed</button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'coordinators' && (
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-bold text-neutral-800 flex items-center space-x-2">
+                  <UserCheck size={18} className="text-brand-500" />
+                  <span>Manage Coordinators</span>
+                </h3>
+                <p className="text-xs text-neutral-400 mt-1">Create and manage coordinator accounts. Coordinators handle assigned campaigns.</p>
+              </div>
+              <button
+                onClick={() => setShowCoordinatorForm(!showCoordinatorForm)}
+                className="rounded-xl bg-brand-600 px-4 py-2 text-xs font-semibold text-white hover:bg-brand-700 transition-colors flex items-center space-x-1.5"
+              >
+                <UserPlus size={14} />
+                <span>{showCoordinatorForm ? 'Cancel' : 'Add Coordinator'}</span>
+              </button>
+            </div>
+
+            {showCoordinatorForm && (
+              <form onSubmit={handleCreateCoordinator} className="rounded-xl border border-neutral-200 bg-neutral-50 p-5 mb-6 space-y-4">
+                <h4 className="text-sm font-bold text-neutral-700">New Coordinator</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Full Name</label>
+                    <input type="text" required value={coordinatorForm.name} onChange={(e) => setCoordinatorForm({ ...coordinatorForm, name: e.target.value })} className="block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Email</label>
+                    <input type="email" required value={coordinatorForm.email} onChange={(e) => setCoordinatorForm({ ...coordinatorForm, email: e.target.value })} className="block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Phone</label>
+                    <input type="text" required value={coordinatorForm.phone} onChange={(e) => setCoordinatorForm({ ...coordinatorForm, phone: e.target.value })} className="block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Password</label>
+                    <input type="password" required value={coordinatorForm.password} onChange={(e) => setCoordinatorForm({ ...coordinatorForm, password: e.target.value })} className="block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-white" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">Assigned Region</label>
+                    <input type="text" value={coordinatorForm.assignedRegion} onChange={(e) => setCoordinatorForm({ ...coordinatorForm, assignedRegion: e.target.value })} className="block w-full rounded-xl border border-neutral-200 py-2 px-3 text-sm focus:border-brand-500 focus:outline-none bg-white" placeholder="e.g. Mumbai, All India" />
+                  </div>
+                </div>
+                <button type="submit" className="rounded-xl bg-brand-600 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-700">Create Coordinator</button>
+              </form>
+            )}
+
+            {coordinators.length === 0 ? (
+              <div className="text-center py-12 text-sm text-neutral-400">No coordinators yet. Add one above.</div>
+            ) : (
+              <div className="space-y-3">
+                {coordinators.map((c) => (
+                  <div key={c._id} className="rounded-xl border border-neutral-200 p-4 flex items-center justify-between gap-4 hover:border-neutral-300 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-10 w-10 rounded-full bg-brand-50 flex items-center justify-center font-bold text-brand-600">
+                        {c.user?.name?.charAt(0) || 'C'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-neutral-800">{c.user?.name}</p>
+                        <p className="text-xs text-neutral-400">{c.user?.email}</p>
+                        <div className="flex items-center space-x-3 mt-1 text-[11px]">
+                          <span className="text-neutral-400">{c.user?.phone}</span>
+                          {c.assignedRegion && <span className="flex items-center gap-1 text-neutral-400"><MapPin size={10} />{c.assignedRegion}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${c.isActive ? 'bg-green-50 text-green-600' : 'bg-neutral-100 text-neutral-500'}`}>
+                        {c.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                      <button
+                        onClick={() => handleToggleCoordinator(c._id, c.isActive)}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${c.isActive ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
+                      >
+                        {c.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCoordinator(c._id)}
+                        className="rounded-lg bg-red-50 text-red-600 px-2.5 py-1 text-xs font-semibold hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

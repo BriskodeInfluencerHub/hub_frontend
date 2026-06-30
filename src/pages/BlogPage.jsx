@@ -31,7 +31,7 @@ const BlogPage = () => {
         <div className="mb-12 border-b border-neutral-200 pb-6">
           <span className="font-utility text-xs text-brand-500 uppercase tracking-wider font-bold">Resources & Insights</span>
           <h1 className="text-4xl font-extrabold font-display tracking-tight text-neutral-900 mt-2">
-            The BRISKODE Bulletin
+            The Odisha Influencer Market Bulletin
           </h1>
         </div>
 

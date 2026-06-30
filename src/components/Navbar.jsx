@@ -95,7 +95,7 @@ const Navbar = () => {
         <div className="flex h-16 justify-between">
           <div className="flex flex-shrink-0 items-center">
             <Link to="/" className="text-lg font-bold tracking-tight text-white font-display">
-              BRISKODE <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Influencer Hub</span>
+              Odisha <span className="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Influencer Market</span>
             </Link>
           </div>
 
@@ -103,6 +103,7 @@ const Navbar = () => {
             <Link to="/" className={`text-sm transition-colors font-display font-medium ${activeLink('/')}`}>Home</Link>
             <Link to="/brands" className={`text-sm transition-colors font-display font-medium ${activeLink('/brands')}`}>Brands</Link>
             <Link to="/how-it-works" className={`text-sm transition-colors font-display font-medium ${activeLink('/how-it-works')}`}>How It Works</Link>
+            <Link to="/campaign-request" className={`text-sm transition-colors font-display font-medium ${activeLink('/campaign-request')}`}>Start Campaign</Link>
 
             <Link to="/discovery" className={`text-sm transition-colors font-display font-medium ${activeLink('/discovery')}`}>Discover</Link>
 
@@ -231,6 +232,7 @@ const Navbar = () => {
             <Link to="/" onClick={() => setMobileMenuOpen(false)} className={`block rounded-lg px-3 py-2 text-base font-semibold ${c.mobileLink} transition-colors`}>Home</Link>
             <Link to="/brands" onClick={() => setMobileMenuOpen(false)} className={`block rounded-lg px-3 py-2 text-base font-semibold ${c.mobileLink} transition-colors`}>Brands</Link>
             <Link to="/how-it-works" onClick={() => setMobileMenuOpen(false)} className={`block rounded-lg px-3 py-2 text-base font-semibold ${c.mobileLink} transition-colors`}>How It Works</Link>
+            <Link to="/campaign-request" onClick={() => setMobileMenuOpen(false)} className={`block rounded-lg px-3 py-2 text-base font-semibold ${c.mobileLink} transition-colors`}>Start Campaign</Link>
             <Link to="/discovery" onClick={() => setMobileMenuOpen(false)} className={`block rounded-lg px-3 py-2 text-base font-semibold ${c.mobileLink} transition-colors`}>Discover</Link>
             {user ? (
               <>

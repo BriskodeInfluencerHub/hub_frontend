@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Award, Check, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera, MessageCircle, Trash } from 'lucide-react';
+import { Award, Check, CheckCircle, ClipboardList, DollarSign, Edit, MapPin, Plus, Send, Sparkles, User as UserIcon, Camera, MessageCircle, Trash, Mail, ExternalLink, Calendar } from 'lucide-react';
 
 const InfluencerDashboard = () => {
   const navigate = useNavigate();
@@ -57,6 +57,11 @@ const InfluencerDashboard = () => {
   const [reelLink, setReelLink] = useState('');
   const [screenshotUpload, setScreenshotUpload] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [invitations, setInvitations] = useState([]);
+  const [showDeliverableForm, setShowDeliverableForm] = useState(null);
+  const [deliverableTitle, setDeliverableTitle] = useState('');
+  const [deliverableUrl, setDeliverableUrl] = useState('');
+  const [deliverableNotes, setDeliverableNotes] = useState('');
 
   const loadDashboardData = async () => {
     try {
@@ -115,6 +120,9 @@ const InfluencerDashboard = () => {
         const reviewsRes = await api.get(`/reviews/influencer/${userRes._id}`).catch(() => null);
         if (reviewsRes) setReviews(reviewsRes.data);
       }
+
+      const invRes = await api.get('/campaign-requests/my-invitations').catch(() => null);
+      if (invRes) setInvitations(invRes.data);
     } catch (e) {
       console.warn('Dashboard data fetch warning', e);
     }
@@ -331,7 +339,7 @@ const InfluencerDashboard = () => {
         </div>
 
         <div className="flex border-b border-neutral-200 mb-6 space-x-4">
-          {['overview', 'campaigns', 'edit-profile', 'wallet'].map((tab) => (
+          {['overview', 'campaigns', 'invitations', 'edit-profile', 'wallet'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -462,6 +470,90 @@ const InfluencerDashboard = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'invitations' && (
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-bold text-neutral-800 mb-6 flex items-center space-x-2">
+              <Mail size={18} className="text-brand-500" />
+              <span>Campaign Invitations</span>
+              {invitations.filter(i => i.status === 'invited').length > 0 && (
+                <span className="rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 text-[10px] font-bold">{invitations.filter(i => i.status === 'invited').length} new</span>
+              )}
+            </h3>
+
+            {invitations.length === 0 ? (
+              <div className="text-center py-12 text-sm text-neutral-400">No campaign invitations yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {invitations.map((inv) => {
+                  const cr = inv.campaignRequest;
+                  return (
+                    <div key={inv._id} className="rounded-2xl border border-neutral-200 p-5 hover:border-neutral-300 transition-colors">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-bold text-neutral-800">{cr?.title || 'Campaign'}</h4>
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                              inv.status === 'invited' ? 'bg-blue-50 text-blue-600' :
+                              inv.status === 'accepted' ? 'bg-green-50 text-green-600' :
+                              inv.status === 'submitted' ? 'bg-purple-50 text-purple-600' :
+                              inv.status === 'approved' ? 'bg-brand-50 text-brand-600' :
+                              'bg-red-50 text-red-600'
+                            }`}>{inv.status}</span>
+                          </div>
+                          {cr?.description && <p className="text-xs text-neutral-500 mt-1">{cr.description.substring(0, 200)}</p>}
+                          <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-neutral-400">
+                            {cr?.budget > 0 && <span className="flex items-center gap-1"><DollarSign size={12} />${cr.budget.toLocaleString()}</span>}
+                            {cr?.location && <span className="flex items-center gap-1"><MapPin size={12} />{cr.location}</span>}
+                            {cr?.timeline && <span className="flex items-center gap-1"><Calendar size={12} />{cr.timeline}</span>}
+                            {cr?.categories?.length > 0 && cr.categories.map((c, i) => <span key={i} className="rounded-full bg-neutral-50 px-2 py-0.5 text-[10px] font-semibold text-neutral-600 border border-neutral-100">{c}</span>)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center space-x-2">
+                        {inv.status === 'invited' && (
+                          <>
+                            <button onClick={async () => { try { await api.patch(`/campaign-requests/my-invitations/${inv._id}/respond`, { status: 'accepted' }); const r = await api.get('/campaign-requests/my-invitations'); setInvitations(r.data); } catch (e) { alert('Failed to accept'); } }} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">Accept</button>
+                            <button onClick={async () => { try { await api.patch(`/campaign-requests/my-invitations/${inv._id}/respond`, { status: 'rejected' }); const r = await api.get('/campaign-requests/my-invitations'); setInvitations(r.data); } catch (e) { alert('Failed to reject'); } }} className="rounded-lg bg-red-50 text-red-600 px-3 py-1.5 text-xs font-semibold hover:bg-red-100">Decline</button>
+                          </>
+                        )}
+                        {inv.status === 'accepted' && (
+                          <button onClick={() => setShowDeliverableForm(showDeliverableForm === inv._id ? null : inv._id)} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">
+                            {showDeliverableForm === inv._id ? 'Cancel' : 'Submit Deliverables'}
+                          </button>
+                        )}
+                        {inv.status === 'submitted' && <span className="text-xs text-purple-600 font-semibold">Awaiting approval</span>}
+                        {inv.status === 'approved' && <span className="text-xs text-green-600 font-semibold">Approved ✓</span>}
+                        {inv.status === 'rejected' && <span className="text-xs text-red-600 font-semibold">Declined</span>}
+                      </div>
+
+                      {showDeliverableForm === inv._id && (
+                        <div className="mt-3 rounded-lg border border-neutral-200 p-3 space-y-2 bg-neutral-50/50">
+                          <input type="text" value={deliverableTitle} onChange={(e) => setDeliverableTitle(e.target.value)} className="w-full rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs focus:border-brand-500 focus:outline-none" placeholder="Title (e.g. Instagram Post)" />
+                          <input type="url" value={deliverableUrl} onChange={(e) => setDeliverableUrl(e.target.value)} className="w-full rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs focus:border-brand-500 focus:outline-none" placeholder="URL to content" />
+                          <input type="text" value={deliverableNotes} onChange={(e) => setDeliverableNotes(e.target.value)} className="w-full rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs focus:border-brand-500 focus:outline-none" placeholder="Notes (optional)" />
+                          <button onClick={async () => { if (!deliverableTitle || !deliverableUrl) return; try { await api.post(`/campaign-requests/my-invitations/${inv._id}/deliverables`, { title: deliverableTitle, url: deliverableUrl, notes: deliverableNotes }); setDeliverableTitle(''); setDeliverableUrl(''); setDeliverableNotes(''); setShowDeliverableForm(null); const r = await api.get('/campaign-requests/my-invitations'); setInvitations(r.data); } catch (e) { alert('Failed to submit'); } }} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">Submit</button>
+                        </div>
+                      )}
+
+                      {inv.deliverables?.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {inv.deliverables.map((d) => (
+                            <a key={d._id} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center space-x-1 rounded-lg bg-neutral-50 border border-neutral-100 px-2.5 py-1 text-[10px] font-semibold text-neutral-600 hover:bg-neutral-100">
+                              <ExternalLink size={10} />
+                              <span>{d.title || 'View'}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

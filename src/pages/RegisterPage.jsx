@@ -193,7 +193,7 @@ const RegisterPage = () => {
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-theme-border bg-theme-surface backdrop-blur-md p-8 shadow-2xl relative z-10 hover:border-theme-border-light transition-all duration-300">
         <div className="text-center">
           <Link to="/" className="text-2xl font-bold tracking-tight text-theme-text font-display">
-            BRISKODE <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display">Influencer Hub</span>
+            Odisha <span className="bg-gradient-to-r from-pink-400 to-indigo-400 bg-clip-text text-transparent font-semibold font-display">Influencer Market</span>
           </Link>
           <h2 className="mt-6 text-xl font-bold tracking-tight text-theme-text font-display">Create your account</h2>
           <p className="mt-2 text-xs text-theme-text-secondary font-sans">

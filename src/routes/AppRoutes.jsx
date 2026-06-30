@@ -25,6 +25,8 @@ import HowItWorksPage from '../pages/HowItWorksPage';
 import InfluencerDashboard from '../pages/InfluencerDashboard';
 import BrandDashboard from '../pages/BrandDashboard';
 import AdminDashboard from '../pages/AdminDashboard';
+import CoordinatorWorkspace from '../pages/CoordinatorWorkspace';
+import CampaignRequestPage from '../pages/CampaignRequestPage';
 import InfluencerDiscovery from '../pages/InfluencerDiscovery';
 import ChatPage from '../pages/ChatPage';
 import CampaignDetails from '../pages/CampaignDetails';
@@ -60,6 +62,8 @@ const DashboardRouter = () => {
     return <BrandDashboard />;
   } else if (user?.role === 'admin') {
     return <AdminDashboard />;
+  } else if (user?.role === 'coordinator') {
+    return <CoordinatorWorkspace />;
   }
   return <div className="p-8">Unauthorized Role</div>;
 };
@@ -113,6 +117,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
+
+      <Route path="/campaign-request" element={<CampaignRequestPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

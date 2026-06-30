@@ -39,7 +39,7 @@ const ContactPage = () => {
             <div className="space-y-4 pt-4 text-xs font-semibold text-neutral-600">
               <div className="flex items-center space-x-3">
                 <Mail size={16} className="text-brand-500" />
-                <span>partners@briskode.com</span>
+                <span>partners@odishainfluencermarket.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin size={16} className="text-brand-500" />
